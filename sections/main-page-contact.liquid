@@ -1,0 +1,283 @@
+{% assign display_map = false %}
+{%- assign onboarding = false -%}
+{%- assign bg_image = section.settings.background_image -%}
+
+{%- if section.settings.api_key == blank and bg_image == blank -%}
+  {%- assign onboarding = true -%}
+{%- endif -%}
+{%- if section.settings.api_key != blank and section.settings.map_address -%}
+  {%- assign display_map = true -%}
+{%- endif -%}
+
+<div class="container contact-page__container">
+  <h1 class="giant-title {% if section.settings.use_columns or section.settings.show_map_section %}page-width{% else %}reading-width{% endif %} {% unless section.settings.show_title %}visually-hidden{% endunless %}">{{ page.title }}</h1>
+</div>
+<div class="container container--no-mobile-padding contact-page__container">
+  {% if section.settings.show_map_section %}
+    <section class="page-width map-section section-{{ section.id }} {% if display_map %}map-section--display-map{% endif %} {% if onboarding == true %}map-section--onboarding{% endif %}"
+        data-section-id="{{ section.id }}"
+        data-section-type="map"
+        data-api-key="{{ section.settings.api_key }}"
+        data-map-style="{{ section.settings.map_style }}">
+
+      {% style %}
+        {% if bg_image.src != blank %}
+          .section-{{ section.id }} .map-section__image {
+            background-position: {{ section.settings.background_image_position }};
+          }
+        {% endif %}
+      {% endstyle %}
+
+      <div class="map-section__background-wrapper global-border-radius map-section__wrapper">
+        {% if bg_image.src != blank %}
+          <div class="map-section__image">
+            <div class="rimage-background fade-in lazyload"
+                  data-bgset="{% render 'bgset', image: bg_image %}"
+                  data-sizes="auto"
+                  data-parent-fit="cover">
+              <noscript>
+                <img src="{{ bg_image | img_url: '1024x1024' }}" alt="{{ bg_image.alt | escape }}" class="rimage-background__image">
+              </noscript>
+            </div>
+          </div>
+        {% elsif onboarding == true %}
+          <div class="placeholder-background">
+            {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+        {% endif %}
+        {% if display_map %}
+          <div class="map-section__container map-section__map-container"
+                id="Map-{{ section.id }}"
+                data-address-setting="{{ section.settings.map_address | escape }}">
+          </div>
+          <div class="map-section__overlay" data-map-overlay></div>
+        {% endif %}
+      </div>
+      <div>
+        {% if section.settings.header != blank or section.settings.address != blank %}
+          <div class="map-section__content-wrapper reading-width">
+            <div class="map-section__content global-border-radius">
+              {% if section.settings.heading != blank %}
+                <h3 class="large-title">{{ section.settings.heading | escape }}</h3>
+              {% endif %}
+              {% if section.settings.address != blank %}
+                <div class="rte">{{ section.settings.address }}</div>
+                {% if section.settings.map_address != blank and section.settings.button_text != blank %}
+                  <p>
+                    <a href="https://maps.google.com?daddr={{ section.settings.map_address | escape }}"
+                      class="btn btn--secondary map_section__directions-btn"
+                      target="_blank"
+                    >
+                      {% if section.settings.show_pin %}
+                        <span class="feather-icon">{% render 'feather-pin' %}</span>
+                      {% endif %}
+                      {% if section.settings.button_text %}
+                        <span>{{ section.settings.button_text | escape }}</span>
+                      {% endif %}
+                    </a>
+                  </p>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </section>
+  {% endif %}
+</div>
+<div class="container contact-page__container">
+
+  {% if section.settings.use_columns %}
+    <div class="page-width row">
+      <div class="grid">
+        <div class="grid__item one-half small-down--one-whole">
+  {% else %}
+    <div class="large-row reading-width">
+  {% endif %}
+
+    <div class="rte {% unless section.settings.use_columns %} rte--expanded-images {% endunless%} clearfix">
+      {{ page.content }}
+    </div>
+
+  </div>
+
+  {% if section.settings.use_columns %}
+    <div class="grid__item one-half small-down--one-whole">
+    {% else %}
+    <div class="row reading-width">
+  {% endif %}
+
+    {% if section.settings.text_above_form != blank %}
+      <div class="rte">
+        {{ section.settings.text_above_form }}
+      </div>
+    {% endif %}
+
+    {% form 'contact' %}
+      {% if form.posted_successfully? %}
+        <p class="form-success">
+          {{ 'contact.form.post_success' | t }}
+        </p>
+      {% endif %}
+
+      {{ form.errors | default_errors }}
+
+      <div class="input-wrapper form-row">
+        <label for="ContactFormName">{{ 'contact.form.name' | t }}</label>
+        <input type="text"
+          name="contact[name]"
+          id="ContactFormName"
+          value="{% if form[name] %}{{ form[name] }}{% elsif customer %}{{ customer.name }}{% endif %}"
+          required>
+      </div>
+
+      <div class="input-wrapper form-row">
+        <label for="ContactFormEmail">{{ 'contact.form.email' | t }}</label>
+        <input type="email"
+          name="contact[email]"
+          id="ContactFormEmail"
+          value="{% if form.email %}{{ form.email }}{% elsif customer %}{{ customer.email }}{% endif %}"
+          spellcheck="false"
+          autocomplete="off"
+          autocapitalize="off"
+          required>
+      </div>
+
+      <div class="input-wrapper form-row">
+        <label for="ContactFormPhone">{{ 'contact.form.phone' | t }}</label>
+        <input type="tel"
+          name="contact[phone]"
+          id="ContactFormPhone"
+          value="{% if form[phone] %}{{ form[phone] }}{% elsif customer %}{{ customer.phone }}{% endif %}"
+          pattern="[0-9\-]*">
+      </div>
+
+      <div class="input-wrapper form-row">
+        <label for="ContactFormMessage">{{ 'contact.form.message' | t }}</label>
+        <textarea rows="10" name="contact[body]" id="ContactFormMessage" required>{% if form.body %}{{ form.body }}{% endif %}</textarea>
+      </div>
+
+      <div class="row">
+        <input type="submit" class=" contact-form__submit btn" value="{{ 'contact.form.send' | t }}">
+      </div>
+
+    {% endform %}
+
+  </div>
+
+  {% if section.settings.use_columns %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+</div>
+
+{% schema %}
+  {
+    "name": "Contact page",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_title",
+        "label": "Show page title",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_map_section",
+        "label": "Show map section",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "use_columns",
+        "label": "Enable column layout for content and form",
+        "default": true
+      },
+      {
+        "type": "richtext",
+        "id": "text_above_form",
+        "label": "Text above contact form"
+      },
+      {
+        "type": "header",
+        "content": "Map and address"
+      },
+      {
+        "id": "heading",
+        "type": "text",
+        "label": "Heading",
+        "default": "Our store"
+      },
+      {
+        "id": "address",
+        "type": "richtext",
+        "label": "Address and hours",
+        "default": "<p>123 Fake St.<br>Toronto, Canada</p><p>Mon - Fri, 10am - 9pm<br>Saturday, 11am - 9pm<br>Sunday, 11am - 5pm</p>"
+      },
+      {
+        "id": "map_address",
+        "type": "text",
+        "label": "Map address",
+        "info": "Google Maps will find the exact location",
+        "default": "80 Spadina Ave, Toronto"
+      },
+      {
+        "id": "button_text",
+        "type": "text",
+        "label": "Map link label",
+        "default": "Get directions"
+      },
+      {
+        "id": "show_pin",
+        "type": "checkbox",
+        "label": "Show pin",
+        "default": true
+      },
+      {
+        "id": "api_key",
+        "type": "text",
+        "label": "Google Maps API key",
+        "info": "You’ll need to [register a Google Maps API Key](https://help.shopify.com/manual/using-themes/troubleshooting/map-section-api-key) to display the map"
+      },
+      {
+        "type": "select",
+        "id": "map_style",
+        "label": "Map style",
+        "default": "default",
+        "options": [
+          {
+            "label": "Default",
+            "value": "default"
+          },
+          {
+            "label": "Silver",
+            "value": "silver"
+          },
+          {
+            "label": "Retro",
+            "value": "retro"
+          },
+          {
+            "label": "Dark",
+            "value": "dark"
+          },
+          {
+            "label": "Night",
+            "value": "night"
+          },
+          {
+            "label": "Aubergine",
+            "value": "aubergine"
+          }
+        ]
+      },
+      {
+        "type": "image_picker",
+        "id": "background_image",
+        "label": "Image",
+        "info": "Displayed if the map isn’t loaded"
+      }
+    ]
+  }
+{% endschema %}

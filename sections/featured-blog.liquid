@@ -1,0 +1,393 @@
+{%- assign blog = blogs[section.settings.blog] -%}
+
+<div class="relative container container--no-mobile-padding featured-blog large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="blog">
+  {% style %}
+    .section-{{ section.id }} .overlay {
+      top: {{ section.settings.overlay_position_y }}%;
+    }
+  {% endstyle %}
+  <div class="page-width">
+    <div class="grid">
+      {% if section.settings.title != blank %}
+        <div class="grid__item one-half small-down--one-whole sticky-element">
+          <div class="featured-blog__header relative">
+            <div class="avoid-overlaps">
+              {% if section.settings.heading_image %}
+                <div class="rimage-background featured-blog__header-image fade-in lazyload global-border-radius"
+                    data-bgset="{% render 'bgset', image: section.settings.heading_image %}"
+                    data-sizes="auto"
+                    data-parent-fit="cover"
+                    style="background-position: {{ section.settings.image_position }}">
+                  <noscript>
+                    <img src="{{ section.settings.heading_image | img_url: '1024x1024' }}" alt="{{ section.settings.heading_image.alt | escape }}" class="rimage-background__image">
+                  </noscript>
+                </div>
+
+              {% else %}
+                <div class="featured-blog__header-image global-border-radius">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {% endif %}
+
+              {% capture view_all_text %}{% if section.settings.show_view_all %}{{ 'blogs.article.view_all' | t }}{% endif %}{% endcapture %}
+
+              {% render 'image-overlay',
+                          background_color: section.settings.color_overlay_bg,
+                          background_opacity: section.settings.overlay_opacity,
+                          text_color: section.settings.color_overlay_text,
+                          title: section.settings.title,
+                          enlarge_title: section.settings.enlarge_title,
+                          text: section.settings.description,
+                          enlarge_text: section.settings.enlarge_text,
+                          url: blog.url,
+                          url_text: view_all_text,
+                          url_style: section.settings.overlay_url_style,
+                          position: 'wide',
+                          mobile_text_below: true %}
+            </div>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="grid__item featured-blog__articles-list {% if section.settings.title != blank %}one-half small-down--one-whole split-column-layout{% else %}one-whole{% endif %}">
+        {% if blog != blank and blog.articles_count > 0 %}
+
+          {% for article in blog.articles limit: section.settings.post_limit %}
+            <div class="featured-blog__article article">
+              {% if article.image %}
+                <div class="hover-images global-border-radius featured-blog__article-images-container">
+                  <a href="{{ article.url }}" class="featured-blog__article-image image-one">
+                    {% render 'responsive-image', image: article.image %}
+                  </a>
+                </div>
+              {% endif %}
+
+              <div class="featured-blog__article-content article-content">
+                <h2 class="article__title standard-title">
+                  <a href="{{ article.url }}">{{ article.title }}</a>
+                </h2>
+
+                <div class="rte">
+                  {% if article.excerpt.size > 0 %}
+                    {{ article.excerpt }}
+                  {% else %}
+                    <p>{{ article.content | strip_html | truncate: 150 }}</p>
+                  {% endif %}
+                </div>
+
+                <div class="article__read-more">
+                  <a class="standard-link" href="{{ article.url }}">
+                    {{ 'blogs.article.read_more' | t }}
+                  </a>
+                </div>
+
+                {% if section.settings.show_tags and article.tags.size > 0 %}
+                  <div class="article__tags rte">
+                    {% for tag in article.tags %}
+                      <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="global-border-radius-small tag">{{ tag }}</a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+
+                <div class="article__meta">
+                  {% if section.settings.show_author or section.settings.show_date %}
+                    <div class="article__authordate">
+                      {% if section.settings.show_author and article.user.image %}
+                        <div class="article__avatar">
+                          <div class="rimage-background fade-in lazyload"
+                            data-bgset="{% render 'bgset', image: article.user.image %}"
+                            data-sizes="auto"
+                            data-parent-fit="cover">
+                            <noscript>
+                              <img src="{{ article.user.image | img_url: '1024x1024' }}" alt="{{ article.user.image.alt | escape }}" class="rimage-background__image">
+                            </noscript>
+                          </div>
+                        </div>
+                      {% endif %}
+
+                      <div class="article__authordate__inner">
+                        {% if section.settings.show_author %}
+                          <div class="article__author">
+                            {{ article.author }}
+                          </div>
+                        {% endif %}
+
+                        {% if section.settings.show_date %}
+                          <div class="article__date">
+                            {{ article.published_at | time_tag: format: 'month_day_year' }}
+                          </div>
+                        {% endif %}
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  {% if blog.comments_enabled? and article.comments_count > 0 %}
+                    <div class="article__comments-summary">
+                      <a href="{{ article.url }}#comments">
+                        <span class="feather-icon icon-beside-text">{% render 'feather-message-circle' %}</span>
+                        <span class="text-beside-icon">{{ 'blogs.comments.with_count' | t: count: article.comments_count }}</span>
+                      </a>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+              {% if section.settings.show_featured_products %}
+                <div class="js-content-products-slider">
+                  {% render 'content-products', content: article.content %}
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+        {% else %}
+
+            {% for i in (1..section.settings.post_limit) %}
+              <div class="featured-blog__article article">
+                <div class="featured-blog__article-image article__heading-image placeholder-landscape-container global-border-radius">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+                <div class="featured-blog__article-content">
+                  <h2 class="article__title standard-title">
+                    <a href="#">{{ 'homepage.onboarding.blog_title' | t }}</a>
+                  </h2>
+
+                  <div class="rte article__content">
+                    {{ 'homepage.onboarding.blog_excerpt' | t }}
+                  </div>
+
+                  <div class="article__read-more">
+                    <a class="standard-link" href="#">
+                      {{ 'blogs.article.read_more' | t }}
+                    </a>
+                  </div>
+
+                  <div class="article__meta">
+                    {% if section.settings.show_author or section.settings.show_date %}
+                      <div class="article__authordate">
+                        <div class="article__authordate__inner">
+                          {% if section.settings.show_author %}
+                            <div class="article__author">{{ 'homepage.onboarding.blog_author' | t }}</div>
+                          {% endif %}
+
+                          {% if section.settings.show_date %}
+                            <div class="article__date">
+                              {{ 'now' | time_tag: format: 'month_day_year' }}
+                            </div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Blog posts",
+    "tag": "section",
+    "class": "shopify-section--with-padding section-featured-blog",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "heading_image",
+        "label": "Image"
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your image in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Blog posts"
+      },
+      {
+        "type": "text",
+        "id": "description",
+        "label": "Text",
+        "default": "Short description of your blog"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 80,
+        "unit": "%"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_view_all",
+        "label": "Show 'All articles' button",
+        "default": true
+      },
+      {
+        "type": "radio",
+        "id": "overlay_url_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Desktop vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      },
+      {
+        "id": "blog",
+        "type": "blog",
+        "label": "Blog"
+      },
+      {
+        "type": "range",
+        "id": "post_limit",
+        "label": "Posts",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "default": 3
+      },
+      {
+        "type": "checkbox",
+        "id": "show_author",
+        "label": "Show author",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_date",
+        "label": "Show date",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_tags",
+        "label": "Show tags",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Featured products"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_featured_products",
+        "label": "Show",
+        "default": true
+      },
+      {
+        "type": "paragraph",
+        "content": "Include links to products in your article to feature them underneath. [Learn more](https://cleancanvas.co.uk/support/boost-article-featured-products)"
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Blog posts",
+        "settings": {
+          "blog": "News",
+          "post_limit": 3
+        }
+      }
+    ]
+  }
+{% endschema %}

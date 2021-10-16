@@ -1,0 +1,40 @@
+{%- layout none -%}
+{%- paginate search.results by 6 -%}
+  {%- capture products_output -%}
+  {%- for result in search.results -%}
+    {%- if result.object_type == 'product' -%}
+      ,{"title":{{ result.title | json }},"url":{{ result.url  | json }},"available":{{ result.available | json }}
+      {%- if result.featured_media -%}
+        ,"featured_image":{"url":{{ result.featured_media | img_url: 'master' | json }},"aspect_ratio":{{ result.featured_media.preview_image.aspect_ratio | json }}}
+      {%- endif -%}
+      {%- if result.media and result.media.size > 0 -%}
+        ,"image":{{ result.media[0] | img_url: 'master' | json }}
+      {%- endif -%}
+      ,"vendor":{{ result.vendor | json }},"price_max":{{ result.price_max }},"price_min":{{ result.price_min }},"compare_at_price_min":{{ result.compare_at_price_min }}}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- capture pages_output -%}
+  {%- for result in search.results -%}
+    {%- if result.object_type == 'page' -%}
+      ,{"title":{{ result.title | json }},"url":{{ result.url  | json }}}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- capture articles_output -%}
+  {%- for result in search.results -%}
+    {%- if result.object_type == 'article' -%}
+      ,{"title":{{ result.title | json }},"url":{{ result.url  | json }}
+      {%- if result.image -%}
+        ,"image":{{ result.image | img_url: 'master' | json }}
+      {%- endif -%}
+      }
+    {%- endif -%}
+  {%- endfor -%}
+  {%- endcapture -%}
+
+{%- comment -%} Output the json object {%- endcomment -%}
+{"resources":{"results":{"products":[{{ products_output | remove_first: ',' }}],"pages":[{{ pages_output | remove_first: ',' }}],"articles":[{{ articles_output | remove_first: ',' }}]}}}
+{%- endpaginate -%}

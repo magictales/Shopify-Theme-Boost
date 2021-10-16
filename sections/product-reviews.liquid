@@ -1,0 +1,28 @@
+<div class="container row">
+  <div class="page-width">
+    <div class="theme-product-reviews">
+      <div id="shopify-product-reviews" data-id="{{ product.id }}">{{ product.metafields.spr.reviews }}</div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Product reviews",
+    "tag": "section",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Add reviews by installing the [Shopify Product Reviews app](https:\/\/apps.shopify.com\/product-reviews?ref=cleancanvas)"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Product reviews"
+      }
+    ],
+    "templates": [
+      "product"
+    ]
+  }
+{% endschema %}

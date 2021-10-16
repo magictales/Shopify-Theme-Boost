@@ -1,0 +1,381 @@
+<div class="container container--no-mobile-padding large-row split-image-section section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="split-image">
+  {% style %}
+    .section-{{ section.id }} .split-image,
+    .section-{{ section.id }} .rimage-outer-wrapper {
+      height: {{ section.settings.height_mobile }}px;
+    }
+
+    @media (min-width: 767px) {
+      .section-{{ section.id }} .split-image,
+      .section-{{ section.id }} .rimage-outer-wrapper {
+        height: {{ section.settings.height_desktop }}px;
+      }
+    }
+
+    {% for block in section.blocks %}
+      {% capture current %}{% cycle 1, 2 %}{% endcapture %}
+      .section-{{ section.id }}.split-image-section .block-{{ current }} .overlay {
+        top: {{ block.settings.overlay_position_y }}%;
+        left: {{ block.settings.overlay_position_x }}%;
+      }
+      .section-{{ section.id }}.split-image-section .block-{{ current }} .image-product-label {
+        top: {{ block.settings.label_position_y }}%;
+        left: {{ block.settings.label_position_x }}%;
+      }
+
+      {% if forloop.first == true %}
+        {% if block.settings.mobile_text_below == false %}
+          .section-{{ section.id }}.split-image-section .block-1 {
+            margin-bottom: 30px;
+          }
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  {% endstyle %}
+
+  <div class="page-width">
+    <div class="grid">
+      {% for block in section.blocks %}
+        {% capture current %}{% cycle 1, 2 %}{% endcapture %}
+        <div class="grid__item one-half small-down--one-whole block-{{ current }}" {{ block.shopify_attributes }}>
+          <div class="relative avoid-overlaps global-border-radius split-image__content-container">
+            <div class="avoid-overlaps__mobile-container">
+              {% if block.settings.image_link != blank %}<a href="{{ block.settings.image_link }}">{% endif %}
+              {% if block.settings.image == blank %}
+                <div class="split-image">
+                  {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {% else %}
+                <div class="split-image split-image-{{ current }}  rimage-background fade-in lazyload"
+                    data-bgset="{% render 'bgset', image: block.settings.image %}"
+                    data-sizes="auto"
+                    data-parent-fit="cover"
+                    style="background-position: {{ block.settings.image_position }}">
+                  <div class="rimage-wrapper" style="padding-top:{{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%">
+                    <noscript>
+                      <img src="{{ section.settings.image | img_url: '1024x1024' }}" alt="{{ section.settings.image.alt | escape }}" class="rimage__image">
+                    </noscript>
+                  </div>
+                </div>
+              {% endif %}
+              {% if block.settings.image_link != blank %}</a>{% endif %}
+
+              {% if block.settings.product_id != blank %}
+                {% assign product_label = all_products[block.settings.product_id] %}
+                {% capture current_number %}{{ current }}{% endcapture %}
+                {% assign quickbuy_toggle = settings.quickbuy_labels_toggle %}
+                {% render 'image-product-label',
+                          product_label: product_label,
+                          current_number: current_number,
+                          show_chevron: block.settings.show_chevron,
+                          chevron: block.settings.chevron_position,
+                          quickbuy: quickbuy_toggle,
+                          color_bg: block.settings.color_label_background,
+                          color_text: block.settings.color_label_text %}
+              {% endif %}
+            </div>
+
+            {% render 'image-overlay',
+              background_color: block.settings.color_overlay_bg,
+              background_opacity: block.settings.overlay_opacity,
+              text_color: block.settings.color_overlay_text,
+              title: block.settings.overlay_title,
+              enlarge_title: block.settings.enlarge_title,
+              text: block.settings.overlay_text,
+              enlarge_text: block.settings.enlarge_text,
+              url: block.settings.overlay_url,
+              url_text: block.settings.overlay_url_text,
+              url_style: block.settings.overlay_url_style,
+              mobile_text_below: block.settings.mobile_text_below %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Split image",
+    "tag": "section",
+    "max_blocks": 2,
+    "settings": [
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop image height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile image height",
+        "default": 500
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Image",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "url",
+            "id": "image_link",
+            "label": "Image link"
+          },
+          {
+            "type": "select",
+            "id": "image_position",
+            "label": "Image alignment",
+            "info": "Used to keep the subject of your focus in view",
+            "default": "center center",
+            "options": [
+              {
+                "value": "top left",
+                "label": "Top left"
+              },
+              {
+                "value": "top center",
+                "label": "Top center"
+              },
+              {
+                "value": "top right",
+                "label": "Top right"
+              },
+              {
+                "value": "center left",
+                "label": "Middle left"
+              },
+              {
+                "value": "center center",
+                "label": "Middle center"
+              },
+              {
+                "value": "center right",
+                "label": "Middle right"
+              },
+              {
+                "value": "bottom left",
+                "label": "Bottom left"
+              },
+              {
+                "value": "bottom center",
+                "label": "Bottom center"
+              },
+              {
+                "value": "bottom right",
+                "label": "Bottom right"
+              }
+            ]
+          },
+          {
+            "type": "header",
+            "content": "Overlay"
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_bg",
+            "label": "Background color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "range",
+            "id": "overlay_opacity",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "Background opacity",
+            "default": 80,
+            "unit": "%",
+            "info": "Does not apply when the overlay is shown under the image on mobile."
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "text",
+            "id": "overlay_title",
+            "label": "Heading",
+            "default": "Split image"
+          },
+          {
+            "type": "text",
+            "id": "overlay_text",
+            "label": "Text",
+            "default": "Display images side by side"
+          },
+          {
+            "type": "text",
+            "id": "overlay_url_text",
+            "label": "Button text",
+            "default": "Optional button"
+          },
+          {
+            "type": "url",
+            "id": "overlay_url",
+            "label": "Button link"
+          },
+          {
+            "type": "radio",
+            "id": "overlay_url_style",
+            "label": "Button style",
+            "options": [
+              { "value": "button_1", "label": "Button - primary" },
+              { "value": "button_2", "label": "Button - secondary" },
+              { "value": "link_style", "label": "Link"}
+            ],
+            "default": "button_1"
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_title",
+            "label": "Enlarge heading",
+            "default": false
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_text",
+            "label": "Enlarge text",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "overlay_position_x",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 50
+          },
+          {
+            "type": "range",
+            "id": "overlay_position_y",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 80
+          },
+          {
+            "type": "checkbox",
+            "id": "mobile_text_below",
+            "label": "Show overlay below image on mobile",
+            "info": "If not ticked product labels may not show on mobile"
+          },
+          {
+            "type": "header",
+            "content": "Product label"
+          },
+          {
+            "type": "color",
+            "id": "color_label_background",
+            "label": "Background color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "color",
+            "id": "color_label_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "product",
+            "id": "product_id",
+            "label": "Product"
+          },
+          {
+            "type": "checkbox",
+            "id": "show_chevron",
+            "label": "Show arrow",
+            "default": true
+          },
+          {
+            "type": "radio",
+            "id": "chevron_position",
+            "label": "Arrow position",
+            "options": [
+              { "value": "left", "label": "Left" },
+              { "value": "right", "label": "Right" }
+            ],
+            "default": "right"
+          },
+          {
+            "type": "range",
+            "id": "label_position_x",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 20
+          },
+          {
+            "type": "range",
+            "id": "label_position_y",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 20
+          }
+        ]
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Split image",
+        "blocks": [
+          {
+            "type": "image",
+            "settings": {
+              "overlay_position_x": 50,
+              "overlay_position_y": 80,
+              "label_position_x": 20,
+              "label_position_y": 20
+            }
+          },
+          {
+            "type": "image",
+            "settings": {
+              "overlay_position_x": 50,
+              "overlay_position_y": 20,
+              "label_position_x": 80,
+              "label_position_y": 80
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

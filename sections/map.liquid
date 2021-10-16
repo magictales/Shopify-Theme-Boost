@@ -1,0 +1,303 @@
+{%- liquid
+  assign display_map = false
+  assign onboarding = false
+  assign bg_image = section.settings.background_image
+
+  if section.settings.api_key == blank and bg_image == blank
+    assign onboarding = true
+  endif
+  if section.settings.api_key != blank and section.settings.map_address
+    assign display_map = true
+  endif
+-%}
+
+<div class="relative container container--no-mobile-padding large-row">
+  {% style %}
+    .section-{{ section.id }} .map-section__background-wrapper {
+      height: {{ section.settings.height_mobile }}px;
+    }
+
+    @media (min-width: 840px) {
+      .section-{{ section.id }} .map-section__background-wrapper {
+        height: {{ section.settings.height_desktop }}px;
+      }
+    }
+
+    .section-{{ section.id }} .map-section__content {
+      background-color: {{ section.settings.color_overlay_bg }};
+      color: {{ section.settings.color_overlay_text }};
+    }
+
+    {% if bg_image.src != blank %}
+    .section-{{ section.id }} .map-section__image {
+      background-position: {{ section.settings.background_image_position }};
+    }
+    {% endif %}
+  {% endstyle %}
+
+  <div class="page-width map-section section-{{ section.id }}
+      {% if display_map %}map-section--display-map{% endif %}
+      {% if onboarding == true %}map-section--onboarding{% endif %}"
+      data-section-id="{{ section.id }}"
+      data-section-type="map"
+      data-api-key="{{ section.settings.api_key }}"
+      data-map-style="{{ section.settings.map_style }}">
+    <div class="map-section__background-wrapper global-border-radius map-section__wrapper">
+      {% if bg_image.src != blank %}
+        <div class="map-section__image">
+          <div class="rimage-background fade-in lazyload"
+                data-bgset="{% render 'bgset', image: bg_image %}"
+                data-sizes="auto"
+                data-parent-fit="cover"
+                style="background-position: {{ section.settings.image_position }}">
+            <noscript>
+              <img src="{{ bg_image | img_url: '1024x1024' }}" alt="{{ bg_image.alt | escape }}" class="rimage-background__image">
+            </noscript>
+          </div>
+        </div>
+      {% elsif onboarding == true %}
+        <div class="placeholder-background">
+          {{ 'lifestyle-2' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {% endif %}
+      {% if display_map %}
+        <div class="map-section__container map-section__map-container"
+              id="Map-{{ section.id }}"
+             data-address-setting="{{ section.settings.map_address | escape }}">
+        </div>
+        <div class="map-section__overlay" data-map-overlay></div>
+      {% endif %}
+    </div>
+    <div class="page-width">
+      <div class="map-section__content-wrapper reading-width">
+        <div class="map-section__content global-border-radius">
+          {% if section.settings.heading != blank %}
+            <h3 class="map-section__title {% if section.settings.enlarge_title %} giant-title{% else %} large-title{% endif %}">{{ section.settings.heading | escape }}</h3>
+          {% endif %}
+          {% if section.settings.address != blank %}
+            <div class="rte {% if section.settings.enlarge_text %} large-text{% endif %}">{{ section.settings.address }}</div>
+            {% if section.settings.map_address != blank and section.settings.button_text != blank %}
+              {%- assign bg_alpha = section.settings.color_overlay_bg | color_extract: 'alpha' -%}
+              {%- assign link_inherit_color = false -%}
+              {%- if section.settings.url_style == 'link_style' -%}
+                {%- if bg_alpha > 0 and section.settings.color_overlay_bg != settings.color_body_background -%}
+                  {%- assign link_inherit_color = true -%}
+                {%- endif -%}
+              {%- endif -%}
+
+              <a href="https://maps.google.com?daddr={{ section.settings.map_address | escape }}"
+                class="{% if section.settings.url_style == 'button_1' %}btn btn--primary{% elsif section.settings.url_style == 'button_2' %}btn btn--secondary{% else %}standard-link {% if link_inherit_color == true %}standard-link--inherit-color{% endif %}{% endif %}"
+                target="_blank"
+              >
+                {% if section.settings.show_pin %}
+                  <span class="feather-icon">{% render 'feather-pin' %}</span>
+                {% endif %}
+                {% if section.settings.button_text %}
+                  <span>{{ section.settings.button_text | escape }}</span>
+                {% endif %}
+              </a>
+            {% endif %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Map",
+    "tag": "section",
+    "class": "index-section index-map-section",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Map and Image"
+      },
+      {
+        "id": "api_key",
+        "type": "text",
+        "label": "Google Maps API key",
+        "info": "You’ll need to [register a Google Maps API Key](https://help.shopify.com/manual/using-themes/troubleshooting/map-section-api-key) to display the map"
+      },
+      {
+        "type": "select",
+        "id": "map_style",
+        "label": "Map style",
+        "default": "default",
+        "options": [
+          {
+            "label": "Default",
+            "value": "default"
+          },
+          {
+            "label": "Silver",
+            "value": "silver"
+          },
+          {
+            "label": "Retro",
+            "value": "retro"
+          },
+          {
+            "label": "Dark",
+            "value": "dark"
+          },
+          {
+            "label": "Night",
+            "value": "night"
+          },
+          {
+            "label": "Aubergine",
+            "value": "aubergine"
+          }
+        ]
+      },
+      {
+        "type": "image_picker",
+        "id": "background_image",
+        "label": "Image",
+        "info": "Displayed if the map isn’t loaded"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 500
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your image in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Text"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "id": "heading",
+        "type": "text",
+        "label": "Heading",
+        "default": "Our store"
+      },
+      {
+        "id": "address",
+        "type": "richtext",
+        "label": "Address and hours",
+        "default": "<p>123 Fake St.<br>Toronto, Canada</p><p>Mon - Fri, 10am - 9pm<br>Saturday, 11am - 9pm<br>Sunday, 11am - 5pm</p>"
+      },
+      {
+        "id": "map_address",
+        "type": "text",
+        "label": "Map address",
+        "info": "Google Maps will find the exact location",
+        "default": "80 Spadina Ave, Toronto"
+      },
+      {
+        "id": "button_text",
+        "type": "text",
+        "label": "Map link label",
+        "default": "Get directions"
+      },
+      {
+        "type": "radio",
+        "id": "url_style",
+        "label": "Map link style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "id": "show_pin",
+        "type": "checkbox",
+        "label": "Show pin",
+        "default": true
+      }
+    ],
+    "presets": [
+      {
+        "name": "Map"
+      }
+    ]
+  }
+{% endschema %}

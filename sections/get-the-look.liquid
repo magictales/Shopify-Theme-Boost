@@ -1,0 +1,288 @@
+{% assign brightness_number = section.settings.background_color | color_brightness %}
+{% if brightness_number < 135 %}{% assign text_color = '#ffffff' %}{% else %}{% assign text_color = '#000000' %}{% endif %}
+
+<div class="relative container container--no-mobile-padding large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="get-the-look">
+  {% style %}
+    .section-{{ section.id }} .get-the-look__products-container {
+      background-color: {{ section.settings.background_color }};
+      color: {{ text_color }}
+    }
+
+    .section-{{ section.id }} .overlay {
+      top: {{ section.settings.overlay_position_y }}%;
+    }
+
+    @media only screen and (max-width: 767px) {
+      .section-{{ section.id }} .relative {
+        background-color: {{section.settings.background_color}};
+      }
+    }
+  {% endstyle %}
+
+  <div class="page-width">
+    <div class="grid get-the-look">
+      <div class="grid__item one-half small-down--one-whole sticky-element">
+        <div class="relative get-the-look__image-container global-border-radius">
+          <div class="avoid-overlaps">
+            {% if section.settings.image %}
+              <div class="rimage-background featured-blog__header-image fade-in lazyload global-border-radius"
+                  data-bgset="{% render 'bgset', image: section.settings.image %}"
+                  data-sizes="auto"
+                  data-parent-fit="cover"
+                  style="background-position: {{ section.settings.image_position }}">
+                <noscript>
+                  <img src="{{ section.settings.image | img_url: '1024x1024' }}" alt="{{ section.settings.image.alt | escape }}" class="rimage-background__image">
+                </noscript>
+              </div>
+
+            {% else %}
+              <div class="featured-blog__header-image global-border-radius">
+                {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+              </div>
+            {% endif %}
+
+            {% if section.settings.overlay_title != blank or section.settings.overlay_url_text != blank %}
+              {% render 'image-overlay',
+                          background_color: section.settings.color_overlay_bg,
+                          background_opacity: section.settings.overlay_opacity,
+                          text_color: section.settings.color_overlay_text,
+                          title: section.settings.overlay_title,
+                          enlarge_title: section.settings.enlarge_title,
+                          text: section.settings.overlay_text,
+                          enlarge_text: section.settings.enlarge_text,
+                          url: section.settings.overlay_url,
+                          url_text: section.settings.overlay_url_text,
+                          url_style: section.settings.overlay_url_style,
+                          position: 'wide',
+                          mobile_text_below: true %}
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      <div class="grid__item one-half small-down--one-whole">
+        <div class="get-the-look__products-container {% if section.settings.overlay_title == blank and section.settings.overlay_url_text == blank%} get-the-look__products-container--margin-top{% endif %} global-border-radius product-carousel-peek">
+          <div class="js-get-the-look-slider">
+            {% for block in section.blocks %}
+              <div class="get-the-look__product js-contains-quickbuy relative" {{ block.shopify_attributes }}>
+
+                {% capture placeholder_type %}product-{{ forloop.index0 | modulo: 6 | plus: 1 }}{% endcapture %}
+
+                {% if block.settings.product_id == blank %}
+                  <div class="product-block">
+                    <div class="get-the-look__product-image global-border-radius">
+                      {{ placeholder_type | placeholder_svg_tag: 'placeholder-svg' }}
+                    </div>
+                    <div class="product-block__title">
+                      {{ 'homepage.onboarding.product_title' | t }}
+                    </div>
+                    <div class="product-price"><span class="theme-money">{{ 1999 | money }}</span></div>
+                  </div>
+                {% else %}
+                  {% assign product = all_products[block.settings.product_id] %}
+                  {% assign quickbuy_toggle = settings.quickbuy_buttons_toggle %}
+                  {% render 'product-block', grid_class: 'ignore', quickbuy: quickbuy_toggle, product: product, show_vendor: section.settings.show_vendor %}
+                {% endif %}
+
+              </div>
+            {% endfor %}
+          </div>
+
+          <div class="container">{% render 'peek-carousel-advice' %}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Get the look",
+    "tag": "section",
+    "class": "section-get-the-look",
+    "max_blocks": 6,
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Featured image"
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your image in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "color",
+        "id": "background_color",
+        "label": "Product area background",
+        "default": "#dae4e6"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 80,
+        "unit": "%"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "text",
+        "id": "overlay_title",
+        "label": "Heading",
+        "default": "Get the look"
+      },
+      {
+        "type": "text",
+        "id": "overlay_text",
+        "label": "Text",
+        "default": "Showcase up to six products together"
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text",
+        "label": "Button text",
+        "default": "Optional button"
+      },
+      {
+        "type": "url",
+        "id": "overlay_url",
+        "label": "Button link"
+      },
+      {
+        "type": "radio",
+        "id": "overlay_url_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Desktop vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      }
+    ],
+    "blocks": [
+      {
+        "type": "product",
+        "name": "Product",
+        "settings": [
+          {
+            "type": "product",
+            "id": "product_id",
+            "label": "Product"
+          }
+        ]
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Get the look",
+        "blocks": [
+          {
+            "type": "product"
+          },
+          {
+            "type": "product"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

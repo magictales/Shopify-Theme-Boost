@@ -1,0 +1,419 @@
+<div class="container container--no-mobile-padding large-row full-width-image full-width-background section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="full-width-image">
+  {% style %}
+    {%- if section.settings.height == 'fixed' -%}
+      .section-{{ section.id }} .avoid-overlaps__mobile-container,
+      .section-{{ section.id }} .rimage-outer-wrapper {
+        height: {{ section.settings.height_mobile }}px;
+      }
+
+      @media (min-width: 840px) {
+        .section-{{ section.id }} .avoid-overlaps__mobile-container,
+        .section-{{ section.id }} .rimage-outer-wrapper {
+          height: {{ section.settings.height_desktop }}px;
+        }
+      }
+    {%- endif -%}
+    .section-{{ section.id }} .overlay {
+      top: {{ section.settings.overlay_position_y }}%;
+      left: {{ section.settings.overlay_position_x }}%;
+    }
+
+    {% for i in (1..2) %}
+      {% capture position_x %}label_position_x_{{ i }}{% endcapture %}
+      {% capture position_y %}label_position_y_{{ i }}{% endcapture %}
+
+      .section-{{ section.id }} .image-product-label-{{ i }} {
+        top: {{ section.settings[position_y] }}%;
+        left: {{ section.settings[position_x] }}%;
+      }
+    {% endfor %}
+  {% endstyle %}
+
+  <div class="page-width">
+    <div class="full-width relative avoid-overlaps global-border-radius global-border-radius--not-extra-small">
+      <div class="avoid-overlaps__mobile-container global-border-radius global-border-radius--not-extra-small">
+        {% if section.settings.image_link != blank %}<a href="{{ section.settings.image_link }}">{% endif %}
+        {% if section.settings.image == blank %}
+          {{ 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' }}
+        {% else %}
+          <div class="rimage-outer-wrapper rimage-background lazyload fade-in"
+            data-bgset="{% render 'bgset', image: section.settings.image %}"
+            data-sizes="auto"
+            data-parent-fit="cover"
+            style="background-position: {{ section.settings.image_position }}">
+            <div class="rimage-wrapper" style="padding-top:{{ 1 | divided_by: section.settings.image.aspect_ratio | times: 100 }}%">
+              <noscript>
+                <img src="{{ section.settings.image | img_url: '1024x1024' }}" alt="{{ section.settings.image.alt | escape }}" class="rimage__image">
+              </noscript>
+            </div>
+          </div>
+        {% endif %}
+        {% if section.settings.image_link != blank %}</a>{% endif %}
+
+        {% for i in (1..2) %}
+          {% capture current_label %}product_id_{{ i }}{% endcapture %}
+          {% capture chevron_position %}chevron_position_{{ i }}{% endcapture %}
+
+          {% if section.settings[current_label] != blank %}
+            {% assign product_label = all_products[section.settings[current_label]] %}
+            {% capture current_number %}{{ i }}{% endcapture %}
+            {% assign quickbuy_toggle = settings.quickbuy_labels_toggle %}
+            {% render 'image-product-label',
+                        product_label: product_label,
+                        current_number: current_number,
+                        show_chevron: section.settings.show_chevron,
+                        chevron: section.settings[chevron_position],
+                        quickbuy: quickbuy_toggle,
+                        color_bg: section.settings.color_label_background,
+                        color_text: section.settings.color_label_text %}
+          {% endif %}
+        {% endfor %}
+      </div>
+
+      {% render 'image-overlay',
+        background_color: section.settings.color_overlay_bg,
+        background_opacity: section.settings.overlay_opacity,
+        text_color: section.settings.color_overlay_text,
+        title: section.settings.overlay_title,
+        enlarge_title: section.settings.enlarge_title,
+        text: section.settings.overlay_text,
+        enlarge_text: section.settings.enlarge_text,
+        url: section.settings.overlay_url_1,
+        url_2: section.settings.overlay_url_2,
+        url_text: section.settings.overlay_url_text_1,
+        url_text_2: section.settings.overlay_url_text_2,
+        url_style: section.settings.overlay_url_style,
+        mobile_text_below: section.settings.mobile_text_below,
+        extra_large_text: true %}
+
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Image with text overlay",
+    "tag": "section",
+    "class": "section-image-with-text-overlay",
+    "settings": [
+      {
+        "type": "image_picker",
+        "id": "image",
+        "label": "Image",
+        "info": "2048 x 1024px recommended"
+      },
+      {
+        "type": "url",
+        "id": "image_link",
+        "label": "Image link"
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your image in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "radio",
+        "id": "height",
+        "label": "Image height",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "Natural"
+          },
+          {
+            "value": "fixed",
+            "label": "Fixed height"
+          }
+        ],
+        "default": "adapt"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 500
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 80,
+        "unit": "%",
+        "info": "Does not apply when the overlay is shown under the image on mobile."
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "textarea",
+        "id": "overlay_title",
+        "label": "Heading",
+        "default": "Full width image"
+      },
+      {
+        "type": "text",
+        "id": "overlay_text",
+        "label": "Text",
+        "default": "Show off your images, display a promotion with product links"
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text_1",
+        "label": "Button 1 text"
+      },
+      {
+        "type": "url",
+        "id": "overlay_url_1",
+        "label": "Button 1 link"
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text_2",
+        "label": "Button 2 text"
+      },
+      {
+        "type": "url",
+        "id": "overlay_url_2",
+        "label": "Button 2 link"
+      },
+      {
+        "type": "radio",
+        "id": "overlay_url_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_x",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      },
+      {
+        "type": "checkbox",
+        "id": "mobile_text_below",
+        "label": "Show overlay below image on mobile",
+        "info": "If not ticked product labels may not show on mobile"
+      },
+      {
+        "type": "header",
+        "content": "Product labels"
+      },
+      {
+        "type": "color",
+        "id": "color_label_background",
+        "label": "Background color",
+        "default": "#ffffff",
+        "info": "If transparent, a background will be applied on small screens to aid visibility"
+      },
+      {
+        "type": "color",
+        "id": "color_label_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_chevron",
+        "label": "Show arrows",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Product label 1"
+      },
+      {
+        "type": "product",
+        "id": "product_id_1",
+        "label": "Product"
+      },
+      {
+        "type": "radio",
+        "id": "chevron_position_1",
+        "label": "Arrow position",
+        "options": [
+          { "value": "left", "label": "Left" },
+          { "value": "right", "label": "Right" }
+        ],
+        "default": "right"
+      },
+      {
+        "type": "range",
+        "id": "label_position_x_1",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "label_position_y_1",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 30
+      },
+      {
+        "type": "header",
+        "content": "Product label 2"
+      },
+      {
+        "type": "product",
+        "id": "product_id_2",
+        "label": "Product"
+      },
+      {
+        "type": "radio",
+        "id": "chevron_position_2",
+        "label": "Arrow position",
+        "options": [
+          { "value": "left", "label": "Left" },
+          { "value": "right", "label": "Right" }
+        ],
+        "default": "right"
+      },
+      {
+        "type": "range",
+        "id": "label_position_x_2",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 80
+      },
+      {
+        "type": "range",
+        "id": "label_position_y_2",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 50
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Image with text overlay"
+      }
+    ]
+  }
+{% endschema %}

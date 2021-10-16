@@ -1,0 +1,43 @@
+{%- assign products_html = '' %}
+{%- assign all_product_handles = '' | split: ' ' -%}
+{%- assign split_content = content | split: 'href="' -%}
+{%- assign products_output_count = 0 %}
+
+{%- for chunk in split_content -%}
+  {%- assign this_href = chunk | split: '"' | first -%}
+  {%- if this_href contains 'products/' -%}
+    {%- assign chunk_handle = this_href | split: '/' | last | split: '?' | first -%}
+    {%- unless all_product_handles contains chunk_handle -%}
+      {%- capture products_html -%}
+        {{- products_html -}}
+        <div class="product-block grid__item one-third small-down--one-half" data-lazy-product-url="{{ this_href | split: '?' | first }}"></div>
+      {%- endcapture -%}
+      {%- assign products_output_count = products_output_count | plus: 1 %}
+    {%- endunless -%}
+  {%- endif -%}
+  {%- assign add_product_handle = chunk_handle | split: ' ' -%}
+  {%- assign all_product_handles = all_product_handles | concat: add_product_handle -%}
+{%- endfor -%}
+
+{% unless products_html == blank %}
+  <div class="content-products product-carousel-peek">
+    {% capture title %}{{ 'blogs.article.products_title' | t }}{% endcapture %}
+    <div class="flex">
+      {% if title != blank %}
+        <div class="content-products__title">{{ title }}</div>
+      {% endif %}
+      {% if products_output_count > 3 %}
+        <div class="content-products-controls">
+          <button class="btn--plain prev icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-left' %}</button>
+          <button class="btn--plain next icon feather-icon" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'feather-arrow-right' %}</button>
+        </div>
+      {% endif %}
+    </div>
+    <div class="content-products__products">
+      <div class="grid grid--uniform">
+        {{ products_html }}
+      </div>
+    </div>
+    {% render 'peek-carousel-advice' %}
+  </div>
+{% endunless %}

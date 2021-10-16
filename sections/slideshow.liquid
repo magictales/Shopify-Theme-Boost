@@ -1,0 +1,475 @@
+<div class="container container--no-mobile-padding large-row full-width-slideshow full-width-background relative section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="slideshow">
+  {% style %}
+  {%- if section.settings.height == 'fixed' -%}
+    .section-{{ section.id }} .rimage-outer-wrapper,
+    .section-{{ section.id }} .placeholder-container {
+      height: {{ section.settings.height_mobile }}px;
+    }
+    @media (min-width: 768px) {
+      .section-{{ section.id }} .rimage-outer-wrapper,
+      .section-{{ section.id }} .placeholder-container {
+        height: {{ section.settings.height_desktop }}px;
+      }
+    }
+  {%- endif -%}
+    {% for block in section.blocks %}
+      .section-{{ section.id }} .block-{{ forloop.index }} .overlay {
+        top: {{ block.settings.overlay_position_y }}%;
+        left: {{ block.settings.overlay_position_x }}%;
+      }
+
+      .section-{{ section.id }} .block-{{ forloop.index }} .image-product-label-1 {
+        top: {{ block.settings.label_position_y_1 }}%;
+        left: {{ block.settings.label_position_x_1 }}%;
+      }
+
+      .section-{{ section.id }} .block-{{ forloop.index }} .image-product-label-2 {
+        top: {{ block.settings.label_position_y_2 }}%;
+        left: {{ block.settings.label_position_x_2 }}%;
+      }
+    {% endfor %}
+  {% endstyle %}
+
+  <div class="page-width relative">
+    <div class="full-width relative js-slideshow-section" data-autoplay="{{ section.settings.slideshow_autoplay }}" data-autoplayspeed="{{ section.settings.slideshow_autoplay_speed }}000">
+      {% for block in section.blocks %}
+        {%- if section.settings.height == 'adapt' -%}
+          {%- assign aspect_ratio = section.blocks.first.settings.image.aspect_ratio | default: 2.2 -%}
+        {%- else -%}
+          {%- assign aspect_ratio = block.settings.image.aspect_ratio -%}
+        {%- endif -%}
+        <div class="slide relative avoid-overlaps block-{{ forloop.index }}" {{ block.shopify_attributes }}>
+          <div class="avoid-overlaps__mobile-container">
+            {% if block.settings.image_link != blank %}<a href="{{ block.settings.image_link }}">{% endif %}
+
+              {% if block.settings.image == blank %}
+                {% capture placeholder_name %}lifestyle-{{ forloop.index | modulo: 2 | plus: 1 }}{% endcapture %}
+                <div class="placeholder-container relative" {%- if section.settings.height == 'adapt' -%} style="padding-top:{{ 1 | divided_by: aspect_ratio | times: 100 }}%;"{%- endif -%}>
+                  {{ placeholder_name | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {% else %}
+                <div class="rimage-outer-wrapper rimage-background lazyload fade-in"
+                  data-bgset="{% render 'bgset', image: block.settings.image %}"
+                  data-sizes="auto"
+                  data-parent-fit="cover"
+                  style="background-position: {{ block.settings.image_position }}">
+                  <div class="rimage-wrapper" style="padding-top:{{ 1 | divided_by: aspect_ratio | times: 100 }}%">
+                    <noscript>
+                      <img src="{{ block.settings.image | img_url: '1024x1024' }}" alt="{{ block.settings.image.alt | escape }}" class="rimage__image">
+                    </noscript>
+                  </div>
+                </div>
+              {% endif %}
+
+            {% if block.settings.image_link != blank %}</a>{% endif %}
+
+            {% for i in (1..2) %}
+              {% capture current_number %}{{ i }}{% endcapture %}
+              {% capture current_label %}product_id_{{ current_number }}{% endcapture %}
+              {% capture chevron_position %}chevron_position_{{ current_number }}{% endcapture %}
+
+              {% if block.settings[current_label] != blank %}
+                {% assign product_label = all_products[block.settings[current_label]] %}
+                {% assign quickbuy_toggle = settings.quickbuy_labels_toggle %}
+                {% render 'image-product-label',
+                            product_label: product_label,
+                            current_number: current_number,
+                            show_chevron: block.settings.show_chevron,
+                            chevron: block.settings[chevron_position],
+                            quickbuy: quickbuy_toggle,
+                            color_bg: block.settings.color_label_background,
+                            color_text: block.settings.color_label_text %}
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          {% render 'image-overlay',
+              background_color: block.settings.color_overlay_bg,
+              background_opacity: block.settings.overlay_opacity,
+              text_color: block.settings.color_overlay_text,
+              title: block.settings.overlay_title,
+              enlarge_title: block.settings.enlarge_title,
+              text: block.settings.overlay_text,
+              enlarge_text: block.settings.enlarge_text,
+              url: block.settings.overlay_url_1,
+              url_text: block.settings.overlay_url_text_1,
+              url_2: block.settings.overlay_url_2,
+              url_text_2: block.settings.overlay_url_text_2,
+              url_style: block.settings.overlay_url_style,
+              mobile_text_below: section.settings.mobile_text_below,
+              extra_large_text: true %}
+        </div>
+      {% endfor %}
+    </div>
+    {% if section.blocks.size > 1 %}
+      <div class="full-width-slideshow-controls full-width-slideshow-controls--prev js">
+        <button class="btn--plain prev icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-left' %}</button>
+      </div>
+      <div class="full-width-slideshow-controls full-width-slideshow-controls--next js">
+        <button class="btn--plain next icon feather-icon" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'feather-arrow-right' %}</button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Slideshow",
+    "tag": "section",
+    "max_blocks": 10,
+    "settings": [
+      {
+        "type": "radio",
+        "id": "height",
+        "label": "Image height",
+        "options": [
+          {
+            "value": "adapt",
+            "label": "Adapt to first image"
+          },
+          {
+            "value": "fixed",
+            "label": "Fixed height"
+          }
+        ],
+        "default": "adapt"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 500
+      },
+      {
+        "type": "checkbox",
+        "id": "mobile_text_below",
+        "label": "Show overlay below image on mobile",
+        "info": "If not ticked product labels may not show on mobile",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "slideshow_autoplay",
+        "label": "Auto rotate between slides",
+        "default": true
+      },
+      {
+        "type": "range",
+        "id": "slideshow_autoplay_speed",
+        "label": "Change slides every",
+        "min": 4,
+        "max": 10,
+        "unit": "s",
+        "step": 1,
+        "default": 6
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Slide",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image",
+            "info": "2048 x 1024px recommended"
+          },
+          {
+            "type": "select",
+            "id": "image_position",
+            "label": "Image alignment",
+            "info": "Used to keep the subject of your image in view",
+            "default": "center center",
+            "options": [
+              {
+                "value": "top left",
+                "label": "Top left"
+              },
+              {
+                "value": "top center",
+                "label": "Top center"
+              },
+              {
+                "value": "top right",
+                "label": "Top right"
+              },
+              {
+                "value": "center left",
+                "label": "Middle left"
+              },
+              {
+                "value": "center center",
+                "label": "Middle center"
+              },
+              {
+                "value": "center right",
+                "label": "Middle right"
+              },
+              {
+                "value": "bottom left",
+                "label": "Bottom left"
+              },
+              {
+                "value": "bottom center",
+                "label": "Bottom center"
+              },
+              {
+                "value": "bottom right",
+                "label": "Bottom right"
+              }
+            ]
+          },
+          {
+            "type": "url",
+            "id": "image_link",
+            "label": "Image link"
+          },
+          {
+            "type": "header",
+            "content": "Overlay"
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_bg",
+            "label": "Background color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "range",
+            "id": "overlay_opacity",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "Background opacity",
+            "default": 80,
+            "unit": "%",
+            "info": "Does not apply when the overlay is shown under the image on mobile."
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "textarea",
+            "id": "overlay_title",
+            "label": "Heading",
+            "default": "Slideshow"
+          },
+          {
+            "type": "text",
+            "id": "overlay_text",
+            "label": "Text",
+            "default": "Use this section to welcome customers to your store, show off your images or display a promotion"
+          },
+          {
+            "type": "text",
+            "id": "overlay_url_text_1",
+            "label": "Button 1 text"
+          },
+          {
+            "type": "url",
+            "id": "overlay_url_1",
+            "label": "Button 1 link"
+          },
+          {
+            "type": "text",
+            "id": "overlay_url_text_2",
+            "label": "Button 2 text"
+          },
+          {
+            "type": "url",
+            "id": "overlay_url_2",
+            "label": "Button 2 link"
+          },
+          {
+            "type": "radio",
+            "id": "overlay_url_style",
+            "label": "Button style",
+            "options": [
+              { "value": "button_1", "label": "Button - primary" },
+              { "value": "button_2", "label": "Button - secondary" },
+              { "value": "link_style", "label": "Link"}
+            ],
+            "default": "button_1"
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_title",
+            "label": "Enlarge heading",
+            "default": false
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_text",
+            "label": "Enlarge text",
+            "default": false
+          },
+          {
+            "type": "range",
+            "id": "overlay_position_x",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 50
+          },
+          {
+            "type": "range",
+            "id": "overlay_position_y",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 80
+          },
+          {
+            "type": "header",
+            "content": "Product labels",
+            "info": "Add up to 2 labels per slide"
+          },
+          {
+            "type": "color",
+            "id": "color_label_background",
+            "label": "Background color",
+            "default": "#ffffff",
+            "info": "If transparent, a background will be applied on small screens to aid visibility"
+          },
+          {
+            "type": "color",
+            "id": "color_label_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "checkbox",
+            "id": "show_chevron",
+            "label": "Show arrows",
+            "default": true
+          },
+          {
+            "type": "header",
+            "content": "Product label 1"
+          },
+          {
+            "type": "product",
+            "id": "product_id_1",
+            "label": "Product"
+          },
+          {
+            "type": "radio",
+            "id": "chevron_position_1",
+            "label": "Arrow position",
+            "options": [
+              { "value": "left", "label": "Left" },
+              { "value": "right", "label": "Right" }
+            ],
+            "default": "right"
+          },
+          {
+            "type": "range",
+            "id": "label_position_x_1",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 20
+          },
+          {
+            "type": "range",
+            "id": "label_position_y_1",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 30
+          },
+          {
+            "type": "header",
+            "content": "Product label 2"
+          },
+          {
+            "type": "product",
+            "id": "product_id_2",
+            "label": "Product"
+          },
+          {
+            "type": "radio",
+            "id": "chevron_position_2",
+            "label": "Arrow position",
+            "options": [
+              { "value": "left", "label": "Left" },
+              { "value": "right", "label": "Right" }
+            ],
+            "default": "right"
+          },
+          {
+            "type": "range",
+            "id": "label_position_x_2",
+            "label": "Horizontal position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 80
+          },
+          {
+            "type": "range",
+            "id": "label_position_y_2",
+            "label": "Vertical position",
+            "min": 0,
+            "max": 100,
+            "unit": "%",
+            "step": 1,
+            "default": 50
+          }
+        ]
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Slideshow",
+        "blocks": [
+          {
+            "type": "image"
+          },
+          {
+            "type": "image"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

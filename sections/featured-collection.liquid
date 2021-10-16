@@ -1,0 +1,185 @@
+{%- liquid
+  assign collection = collections[section.settings.collection]
+
+  if section.settings.enable_carousel == true
+    assign product_count = 12
+    assign show_carousel_nav = true
+
+    if collection.products_count <= section.settings.grid and collection != blank
+      assign show_carousel_nav = false
+    endif
+  else
+    assign product_count = section.settings.row_count | times: section.settings.grid
+    assign show_carousel_nav = false
+  endif
+-%}
+
+<div class="relative container large-row featured-collection" data-section-id="{{ section.id }}" data-section-type="featured-collection">
+  <div class="page-width">
+    {%- if section.settings.title != blank or section.settings.link_text != blank or section.settings.enable_carousel == true -%}
+    <div class="large-row ">
+
+      <div class="text-center">
+        {% if section.settings.title != blank %}
+          <h2 class="featured-collection--title {% if section.settings.enlarge_title %}giant-title{% else %}large-title{% endif%}">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+
+        {% if section.settings.link_text != blank %}
+          <a class="standard-link" href="{{ collection.url }}">{{ section.settings.link_text | escape }}</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="product-carousel-peek">
+      {%- if show_carousel_nav -%}
+        <div class="featured-collection-controls featured-collection-controls--prev">
+          <button class="btn--plain prev icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-left' %}</button>
+        </div>
+      {%- endif -%}
+
+      <div class="grid-flex" {%- if section.settings.enable_carousel == true -%}data-carousel-enabled data-slides-per-row="{{ section.settings.grid }}"{%- endif -%}>
+        {%- assign grid_class = 'one-quarter' -%}
+        {%- if section.settings.grid == 2 -%}
+          {%- assign grid_class = 'one-half' -%}
+        {%- elsif section.settings.grid == 3 -%}
+          {%- assign grid_class = 'one-third' -%}
+        {%- elsif section.settings.grid == 5 -%}
+          {%- assign grid_class = 'one-fifth' -%}
+        {%- endif -%}
+
+        {%- if section.settings.grid_mobile == "2" -%}
+          {%- assign mobile_grid_class = 'small-down--one-half' -%}
+        {%- else -%}
+          {%- assign mobile_grid_class = 'small-down--one-whole' -%}
+        {%- endif -%}
+        {% capture grid_class_list %}{{ grid_class }} {{ mobile_grid_class }} grid-flex__item{% endcapture %}
+
+        {% for product in collection.products limit: product_count %}
+          {% assign quickbuy_toggle = settings.quickbuy_buttons_toggle %}
+          {% render 'product-block', quickbuy: quickbuy_toggle, product: product, grid_class: grid_class_list, show_vendor: section.settings.show_vendor %}
+        {%- else -%}
+          {%- if section.settings.enable_carousel == true -%}{%- assign product_count = 8 -%}{%- endif -%}
+          {% for i in (1..product_count) %}
+            <div class="featured-collection--product product-block relative grid-flex__item {{ grid_class_list }}">
+              <div class="product-block__image-container">
+                {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                <div class="global-border-radius image-one">
+                  {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small' }}
+                </div>
+              </div>
+              <div class="product-block__title">
+                {{ 'homepage.onboarding.product_title' | t }}
+              </div>
+              <div class="product-price"><span class="theme-money">{{ 1999 | money }}</span></div>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+
+      {%- if show_carousel_nav -%}
+        <div class="featured-collection-controls featured-collection-controls--next">
+          <button class="btn--plain next icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-right' %}</button>
+        </div>
+        {% render 'peek-carousel-advice' %}
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Featured collection",
+    "tag": "section",
+    "class": "section-featured-collection",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Featured collection"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "link_text",
+        "label": "Link text",
+        "default": "Shop now"
+      },
+      {
+        "type": "collection",
+        "id": "collection",
+        "label": "Collection"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_carousel",
+        "label": "Enable carousel",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Desktop products per row",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "range",
+        "id": "row_count",
+        "label": "Rows (desktop)",
+        "min": 1,
+        "max": 5,
+        "step": 1,
+        "default": 1,
+        "info": "Does not apply to carousel layout"
+      },
+      {
+        "type": "select",
+        "id": "grid_mobile",
+        "label": "Mobile products per row",
+        "options": [
+          {
+            "value": "1",
+            "label": "1"
+          },
+          {
+            "value": "2",
+            "label": "2"
+          }
+        ],
+        "default": "2"
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Featured collection"
+      }
+    ]
+  }
+{% endschema %}

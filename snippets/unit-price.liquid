@@ -1,0 +1,15 @@
+{%- if variant.unit_price_measurement -%}
+  {%- capture unit_price_base_unit -%}
+    {%- if variant.unit_price_measurement -%}
+      {%- if variant.unit_price_measurement.reference_value != 1 -%}
+        {{- variant.unit_price_measurement.reference_value -}}
+      {%- endif -%}
+      {{- variant.unit_price_measurement.reference_unit -}}
+    {%- endif -%}
+  {%- endcapture -%}
+  <div class="unit-price {{ class }}">
+    <span class="unit-price__price theme-money">{{ variant.unit_price | money }}</span>
+    <span class="unit-price__separator">{{ 'products.product.unit_price_separator' | t }}</span>
+    <span class="unit-price__unit">{{ unit_price_base_unit }}</span>
+  </div>
+{%- endif -%}

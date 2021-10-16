@@ -1,0 +1,37 @@
+{% if quickbuy == true %}<div class="js-contains-quickbuy">{% endif %}
+<a class="image-product-label global-border-radius-small image-product-label-{{ current_number }} {% if show_chevron %}{% if chevron == 'right' %} chevron-right avoid-overlaps__item--gravity-right{% else %} chevron-left avoid-overlaps__item--gravity-left{% endif %}{% endif %} {% if quickbuy == true %} js-quickbuy-button {% endif %} avoid-overlaps__item" href="{{ product_label.url }}">
+  {%- assign bg_alpha = color_bg | color_extract: 'alpha' -%}
+  {%- assign text_brightness = color_text | color_brightness -%}
+  <div class="image-product-label__background {% if bg_alpha == 0 %}image-product-label__background--{% if text_brightness > 60 %}dark{% else %}light{% endif %}-mobile{% endif %}" {% if bg_alpha > 0 %}style="background: {{ color_bg }}"{% endif %}></div>
+  <div class="image-product-label__content" style="color: {{ color_text }}">
+    <div class="image-product-label-title">{{ product_label.title }}</div>
+    <div class="image-product-label-price">
+      {% if product_label.price_varies %}
+        <span class="product-price__from image-product-label-price__from">{{ 'products.product.from_text' | t }}</span>
+      {% endif %}
+      {% if product_label.compare_at_price > product_label.price %}
+          <span class="product-price__reduced theme-money">{{ product_label.price | money }}</span>
+      {% else %}
+        <span class="theme-money">{{ product_label.price | money }}</span>
+      {% endif %}
+
+      {% if product_label.compare_at_price > product_label.price %}
+        <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+        <span class="product-price__compare theme-money">{{ product_label.compare_at_price | money }}</span>
+      {% endif %}
+      {%- assign variant = product_label.variants | sort: 'price' | first -%}
+      {%- if variant.unit_price -%}
+        {% render 'unit-price', variant: variant %}
+      {%- endif -%}
+    </div>
+    {% if show_chevron %}
+      <span class="feather-icon icon--image-product-label">{% render 'feather-chevron-right' %}</span>
+    {% endif %}
+  </div>
+
+  {% if quickbuy %}
+    {% render 'quick-buy-placeholder', product: product_label %}
+  {% endif %}
+</a>
+{% if quickbuy == true %}</div>{% endif %}
+

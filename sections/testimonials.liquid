@@ -1,0 +1,189 @@
+<div class="relative container container--no-mobile-padding large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="testimonials">
+  {% style %}
+    .section-{{ section.id }} .testimonials {
+      background-color: {{ section.settings.color_bg }};
+      color: {{ section.settings.color_text }};
+    }
+    .section-{{ section.id }} .testimonials .large-title {
+      color: {{ section.settings.color_title }};
+    }
+    .section-{{ section.id }} .testimonials .slick-dots li button {
+      background-color: {{ section.settings.color_title }};
+    }
+    .section-{{ section.id }} .testimonials .slick-dots li.slick-active button {
+      background-color: transparent;
+      border-color: {{ section.settings.color_title }};
+    }
+    .section-{{ section.id }} .testimonials .feather-star {
+      stroke: {{ section.settings.color_star }};
+      fill: {{ section.settings.color_star }};
+    }
+    {% if section.settings.circle_images == true %}
+    .section-{{ section.id }} .testimonials .testimonial-author-image {
+      border-radius: 50%;
+    }
+    {% endif %}
+  {% endstyle %}
+  <div class="page-width testimonials large-section global-border-radius">
+
+    {%- if section.settings.title != blank or section.settings.enable_carousel == true -%}
+      <div class="testimonials--title text-center">
+        {% if section.settings.title != blank %}
+          <h2 class="{% if section.settings.enlarge_title %}giant-title{% else %}large-title{% endif%}">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <div class="grid-flex js-testimonials-section" data-autoplay="{{ section.settings.autoplay }}" data-autoplayspeed="{{ section.settings.autoplay_speed }}000">
+      {% for block in section.blocks %}
+        <div class="grid-flex__item testimonial one-half small-down--one-whole" {{ block.shopify_attributes }}>
+          <div class="testimonial-stars">
+            {% for i in (1..block.settings.star_rating) %}
+              <span class="icon feather-icon testimonial-star">{% render 'feather-star' %}</span>
+            {% endfor %}
+          </div>
+          <blockquote class="testimonial-content rte {% if section.settings.enlarge_text %} large-text{% else %} standard-text{% endif %}">
+            {{ block.settings.testimonial }}
+            <footer class="testimonial-author-info">
+              {%- if block.settings.image != blank -%}
+                <div class="testimonial-author-image lazyload rimage-background global-border-radius"
+                     data-bgset="{% render 'bgset', image: block.settings.image %}"
+                     data-sizes="auto"
+                     data-parent-fit="cover">
+                </div>
+              {%- endif -%}
+              {%- if block.settings.author != blank -%}
+                <div class="testimonial-author-name">{{ block.settings.author }}</div>
+              {%- endif -%}
+            </footer>
+          </blockquote>
+        </div>
+
+      {%- else -%}
+
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Testimonials",
+    "tag": "section",
+    "class": "section-testimonials",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Testimonials"
+      },
+      {
+        "type": "color",
+        "id": "color_bg",
+        "label": "Background color",
+        "default": "#ecf1f2"
+      },
+      {
+        "type": "color",
+        "id": "color_title",
+        "label": "Heading color",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "color_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "color",
+        "id": "color_star",
+        "label": "Stars color",
+        "default": "#ffdd00"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "autoplay",
+        "label": "Autoplay",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "autoplay_speed",
+        "label": "Change slides every",
+        "min": 4,
+        "max": 10,
+        "unit": "s",
+        "step": 1,
+        "default": 6
+      },
+      {
+        "type": "checkbox",
+        "id": "circle_images",
+        "label": "Circular author images",
+        "default": false
+      }
+    ],
+    "blocks": [
+      {
+        "type": "testimonial",
+        "name": "Testimonial",
+        "settings": [
+          {
+            "type": "range",
+            "id": "star_rating",
+            "min": 0,
+            "max": 5,
+            "step": 1,
+            "label": "Star rating",
+            "default": 5
+          },
+          {
+            "type": "richtext",
+            "id": "testimonial",
+            "label": "Text",
+            "default": "<p>We couldn't be more pleased, the products and services are absolutely fantastic!</p>",
+            "info": "For best results, keep the word count consistent in each testimonial."
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Author's image"
+          },
+          {
+            "type": "text",
+            "id": "author",
+            "label": "Author"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Testimonials",
+        "blocks": [
+          {
+            "type": "testimonial"
+          },
+          {
+            "type": "testimonial"
+          }
+        ]
+      }
+    ]
+  }
+
+{% endschema %}

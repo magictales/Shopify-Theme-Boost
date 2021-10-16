@@ -1,0 +1,110 @@
+<div class="relative large-row container" data-section-id="{{ section.id }}" data-section-type="collection-list">
+  <div class="page-width">
+    {% if section.settings.title != blank %}
+      <div class="large-row">
+        <h2 class="text-center {% if section.settings.enlarge_title %}giant-title{% else %}large-title{% endif%}">{{ section.settings.title | escape }}</h2>
+      </div>
+    {% endif %}
+
+    <div class="grid-flex">
+      {%- assign grid_class = 'one-quarter' -%}
+      {%- if section.settings.grid == 2 -%}
+        {%- assign grid_class = 'one-half' -%}
+      {%- elsif section.settings.grid == 3 -%}
+        {%- assign grid_class = 'one-third' -%}
+      {%- elsif section.settings.grid == 5 -%}
+        {%- assign grid_class = 'one-fifth' -%}
+      {%- endif -%}
+      {% for block in section.blocks %}
+
+      {% capture grid_class_list %}{{ grid_class }} small-down--one-half{% endcapture %}
+
+        {%- assign collection = collections[block.settings.collection] -%}
+        {% if collection != blank %}
+
+          {% render 'collection-block', collection: collection, extra_attrs: block.shopify_attributes, grid_class: grid_class_list, image: collection.featured_image %}
+
+        {% else %}
+
+          <div class="product-block grid-flex__item {{ grid_class_list }}" {{ block.shopify_attributes }}>
+            <div class="hover-images global-border-radius">
+              <span class="product-block__image image-one">
+                {% capture placeholder_type %}collection-{{ forloop.index0 | modulo: 4 | plus: 1 }}{% endcapture %}
+                {{ placeholder_type | placeholder_svg_tag: 'placeholder-svg' }}
+              </span>
+            </div>
+            <div class="product-block__title">
+              <a>{{ 'homepage.onboarding.collection_title' | t }}</a>
+            </div>
+          </div>
+
+        {% endif %}
+
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Collection list",
+    "tag": "section",
+    "class": "section-collection-list",
+    "max_blocks": 20,
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Collection list"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Collections per row",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      }
+    ],
+    "blocks": [
+      {
+        "type": "collection",
+        "name": "Collection",
+        "settings": [
+          {
+            "type": "collection",
+            "id": "collection",
+            "label": "Collection"
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Collection list",
+        "blocks": [
+          {
+            "type": "collection"
+          },
+          {
+            "type": "collection"
+          },
+          {
+            "type": "collection"
+          },
+          {
+            "type": "collection"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,133 @@
+<div data-section-type="search-template" data-section-id="{{ section.id }}">
+  {% paginate search.results by section.settings.pagination_limit %}
+    <div class="container page-width large-row search-page">
+      <h1 class="giant-title center">
+        {{ 'general.search.title' | t }}
+      </h1>
+      {%- if search.performed -%}
+        <div class="search-performed center large-text row">
+          {% capture terms %}{{ search.terms | remove: '*' }}{% endcapture %}
+          {% if search.results_count == 0 %}
+            {{ 'general.search.no_results' | t: terms: terms }}
+          {% else %}
+            {{ 'general.search.results_for' | t: terms: terms }}
+          {% endif %}
+        </div>
+      {%- endif -%}
+
+      <div class="large-row center">
+        <form action="{{ routes.search_url }}" method="get" role="search" class="search-page-form">
+          <input type="hidden" name="type" value="{{ settings.search_type }}" />
+          <input type="hidden" name="options[prefix]" value="last" />
+          <label for="Search" class="label-hidden">
+            {{ 'general.search.placeholder' | t }}
+          </label>
+          <input type="search"
+                name="q"
+                id="Search"
+                value="{{ search.terms | escape | remove: '*' }}"
+                placeholder="{{ 'general.search.placeholder' | t }}">
+          <button type="submit" class="btn search-page-button">
+            {{ 'general.search.submit' | t }}
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="search-results-list page-width container">
+      {% if search.performed %}
+        <div class="grid-flex large-row">
+          {%- assign grid_class = 'one-quarter' -%}
+          {%- if section.settings.grid == 2 -%}
+            {%- assign grid_class = 'one-half' -%}
+          {%- elsif section.settings.grid == 3 -%}
+            {%- assign grid_class = 'one-third' -%}
+          {%- elsif section.settings.grid == 5 -%}
+            {%- assign grid_class = 'one-fifth' -%}
+          {%- endif -%}
+
+          {%- assign grid_mobile_class = 'one-half' -%}
+          {%- if section.settings.grid_mobile == '1' -%}
+            {%- assign grid_mobile_class = 'one-whole' -%}
+          {%- endif -%}
+
+          {% capture grid_class_list %}{{ grid_class }} small-down--{{ grid_mobile_class }} grid-flex__item{% endcapture %}
+
+          {% for item in search.results %}
+
+            {% if item.object_type == 'product' %}
+
+              {% render 'product-block', product: item, quickbuy: settings.quickbuy_buttons_toggle, grid_class: grid_class_list, show_vendor: settings.grid_show_vendor %}
+
+            {% else %}
+
+              <div class="{{ grid_class_list }}">
+                {% assign featured_image = item.image | default: item.featured_image %}
+                {% if featured_image != blank %}
+                  <a href="{{ item.url }}" title="{{ item.title | escape }}">
+                    {% render 'responsive-image', image: featured_image %}
+                  </a>
+                {% endif %}
+                <h5 class="title row">{{ item.title | link_to: item.url }}</h5>
+                <div>{{ item.content | strip_html | truncatewords: 30 }}</div>
+
+                <a href="{{ item.url }}">
+                  {{ 'blogs.article.read_more' | t }}
+                </a>
+              </div>
+
+            {% endif %}
+
+          {% endfor %}
+        </div>
+
+        {% if paginate.pages > 1 %}
+          {% render 'pagination', paginate: paginate %}
+        {% endif %}
+      {% endif %}
+
+    </div>
+  {% endpaginate %}
+</div>
+
+{% schema %}
+  {
+    "name": "Search results",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendors",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Items per row",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "select",
+        "id": "grid_mobile",
+        "label": "Items per row mobile",
+        "options": [
+          { "value": "1", "label": "1" },
+          { "value": "2", "label": "2" }
+        ],
+        "default": "2"
+      },
+      {
+        "type": "range",
+        "id": "pagination_limit",
+        "min": 12,
+        "max": 50,
+        "step": 2,
+        "label": "Number of items to show per page",
+        "default": 16
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,355 @@
+<div class="relative container {% if section.settings.enable_carousel == false and section.settings.enable_margin == false %} container--no-mobile-padding{% endif %} large-row gallery-section section-{{ section.id }}" data-section-type="gallery">
+
+  {% style %}
+    {% assign overlay_opacity = section.settings.overlay_opacity | divided_by: 100.00 | round: 2 %}
+    {% assign color_overlay_bg = section.settings.color_overlay_bg | color_modify: 'alpha', overlay_opacity  %}
+
+    .section-{{ section.id }} .gallery__item .overlay__bg {
+      background-color: {{ color_overlay_bg }};
+    }
+
+    .section-{{ section.id }} .gallery__item {
+      height: {{ section.settings.image_height }}px;
+    }
+    .section-{{ section.id }} .gallery .overlay__content {
+      color: {{ section.settings.color_overlay_text }};
+    }
+    @media (max-width: 768px) {
+      .section-{{ section.id }} .gallery__item {
+        height: {{ section.settings.image_height_mobile }}px;
+      }
+    }
+  {% endstyle %}
+
+  <div class="page-width {% if section.settings.enable_carousel %} gallery--mobile-container{% endif %}">
+    <div class="gallery gallery--grid-{{ section.settings.grid }}{% if section.settings.enable_margin %} gallery--with-margins{% endif %}{% if section.settings.enable_carousel %} gallery--mobile-carousel slick-slider-overlay-dots{% endif %}" data-grid="{{ section.settings.grid }}">
+      <div class="gallery__row">
+        {%- for block in section.blocks -%}
+
+          {%- assign forloop_mod_grid = forloop.index0 | modulo: section.settings.grid -%}
+          {%- if forloop.index0 > 0 and forloop_mod_grid == 0 -%}
+            </div><div class="gallery__row">
+          {%- endif -%}
+
+          {%- assign show_overlay_text = false -%}
+          {%- if block.settings.title != blank or block.settings.text != blank or block.settings.button_text != blank -%}
+            {%- assign show_overlay_text = true -%}
+          {%- endif -%}
+
+          <div class="gallery__item gallery__item-{{ forloop.index }} {% if section.settings.enable_margin == true %} global-border-radius{% endif %} {% if block.settings.enlarge_image %} gallery__item--enlarged{% endif %} lazyload--placeholder" {{ block.shopify_attributes }}>
+
+            {%- if block.settings.link != blank -%}<a class="gallery__item-link" href="{{ block.settings.link }}">{%- endif -%}
+
+              {%- if block.settings.image == blank -%}
+                <div class="gallery__image placeholder-image {% if show_overlay_text %}dark{% endif %}">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {%- else -%}
+                <div class="gallery__image rimage-background fade-in lazyload{% if section.settings.enable_carousel %}--manual{% endif %}"
+                     data-bgset="{% render 'bgset', image: block.settings.image %}"
+                     data-sizes="auto"
+                     data-parent-fit="cover"
+                     style="background-position: {{ block.settings.alignment }}">
+                  <noscript>
+                    <img src="{{ block.settings.image | img_url: '1024x1024' }}" alt="{{ block.settings.image.alt | escape }}" class="rimage-background__image">
+                  </noscript>
+                </div>
+              {%- endif -%}
+
+              {%- assign has_content = false -%}
+              {%- if block.settings.title != blank or block.settings.text != blank -%}{%- assign has_content = true -%}{%- endif -%}
+              <div class="overlay-position overlay-position--{{ block.settings.overlay_position }} overlay-style--{{ section.settings.overlay_style }}">
+                <div class="overlay-container overlay--center {% if section.settings.overlay_style == 'box' %} global-border-radius-overlays{% endif %}">
+                  <div class="overlay__bg {% if has_content == false %} overlay__bg--empty{% endif %}"></div>
+                  <div class="overlay__content">
+                    {%- if block.settings.title != blank -%}
+                      <h3 class="large-title">{{ block.settings.title | newline_to_br }}</h3>
+                    {%- endif -%}
+                    {%- if block.settings.text != blank -%}
+                      <div class="overlay-text">{{ block.settings.text }}</div>
+                    {%- endif -%}
+                    {%- if block.settings.button_label != blank -%}
+                      <div class="overlay__links">
+                        <span class="{% if section.settings.overlay_url_style == 'button_1' %}btn btn--small btn--primary{% elsif section.settings.overlay_url_style == 'button_2' %}btn btn--small btn--secondary{% else %}standard-link {% if link_inherit_color == true %}standard-link--inherit-color{% endif %}{% endif %}">{{ block.settings.button_label }}</span>
+                      </div>
+                    {%- endif -%}
+                  </div>
+                </div>
+              </div>
+
+            {%- if block.settings.link != blank -%}</a>{%- endif -%}
+
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+    {%- if section.settings.enable_carousel == true -%}
+      <div class="gallery-slideshow-controls gallery-slideshow-controls--prev">
+        <button class="btn--plain prev icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-left' %}</button>
+      </div>
+      <div class="gallery-slideshow-controls gallery-slideshow-controls--next">
+        <button class="btn--plain next icon feather-icon" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'feather-arrow-right' %}</button>
+      </div>
+    {%- endif -%}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Image gallery",
+  "tag": "section",
+  "class": "section-gallery",
+  "settings": [
+    {
+      "type": "range",
+      "id": "grid",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "label": "Max images per row",
+      "default": 2
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "min": 100,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "label": "Image row heights desktop",
+      "default": 300
+    },
+    {
+      "type": "range",
+      "id": "image_height_mobile",
+      "min": 100,
+      "max": 1000,
+      "step": 10,
+      "unit": "px",
+      "label": "Image row heights mobile",
+      "default": 300
+    },
+    {
+      "id": "enable_margin",
+      "type": "checkbox",
+      "label": "Add spacing",
+      "default": true
+    },
+    {
+      "id": "enable_carousel",
+      "type": "checkbox",
+      "label": "Enable mobile slideshow",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Overlays"
+    },
+    {
+      "id": "overlay_style",
+      "type": "select",
+      "label": "Overlay style",
+      "default": "box",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full image"
+        },
+        {
+          "value": "box",
+          "label": "Text box"
+        },
+        {
+          "value": "no_background",
+          "label": "No background"
+        }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "color_overlay_bg",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "label": "Background opacity",
+      "default": 80,
+      "unit": "%"
+    },
+    {
+      "type": "color",
+      "id": "color_overlay_text",
+      "label": "Text color",
+      "default": "#333333"
+    },
+    {
+      "type": "radio",
+      "id": "overlay_url_style",
+      "label": "Button style",
+      "options": [
+        { "value": "button_1", "label": "Button - primary" },
+        { "value": "button_2", "label": "Button - secondary" },
+        { "value": "link_style", "label": "Link"}
+      ],
+      "default": "button_1"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "image",
+      "name": "Image",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "alignment",
+          "label": "Image alignment",
+          "info": "Used to keep the subject of your focus in view",
+          "default": "center center",
+          "options": [
+            {
+              "value": "top left",
+              "label": "Top left"
+            },
+            {
+              "value": "top center",
+              "label": "Top center"
+            },
+            {
+              "value": "top right",
+              "label": "Top right"
+            },
+            {
+              "value": "center left",
+              "label": "Middle left"
+            },
+            {
+              "value": "center center",
+              "label": "Middle center"
+            },
+            {
+              "value": "center right",
+              "label": "Middle right"
+            },
+            {
+              "value": "bottom left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "bottom right",
+              "label": "Bottom right"
+            }
+          ]
+        },
+        {
+          "type": "checkbox",
+          "id": "enlarge_image",
+          "label": "Enlarge image",
+          "default": false
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "textarea",
+          "id": "title",
+          "label": "Heading",
+          "default": "Image title"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button text"
+        },
+        {
+          "type": "select",
+          "id": "overlay_position",
+          "label": "Position",
+          "default": "center-center",
+          "options": [
+            {
+              "label": "Top left",
+              "value": "top-left"
+            },
+            {
+              "label": "Top center",
+              "value": "top-center"
+            },
+            {
+              "label": "Top right",
+              "value": "top-right"
+            },
+            {
+              "label": "Center left",
+              "value": "center-left"
+            },
+            {
+              "label": "Center center",
+              "value": "center-center"
+            },
+            {
+              "label": "Center right",
+              "value": "center-right"
+            },
+            {
+              "label": "Bottom left",
+              "value": "bottom-left"
+            },
+            {
+              "label": "Bottom center",
+              "value": "bottom-center"
+            },
+            {
+              "label": "Bottom right",
+              "value": "bottom-right"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image gallery",
+      "blocks": [
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        },
+        {
+          "type": "image"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

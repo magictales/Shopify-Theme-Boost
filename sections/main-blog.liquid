@@ -1,0 +1,331 @@
+<div class="blog" data-section-id="{{ section.id }}" data-section-type="blog">
+  {%- paginate blog.articles by 12 -%}
+    {%- unless section.settings.blog_magazine_layout -%}
+      <div class="container container--no-mobile-padding">
+        <div class="page-width row center">
+          {%- if section.settings.blog_show_rss -%}
+            <div>
+              <a class="blog-rsslink" href="{{ blog.url }}.atom" aria-label="{{ blog.title | escape }} RSS" title="{{ blog.title | escape }} RSS">
+                <span class="feather-icon">{% render 'feather-rss' %}</span>
+              </a>
+            </div>
+          {%- endif -%}
+          <h1 class="large-title">{{ blog.title | link_to: blog.url }}</h1>
+          {%- if section.settings.blog_show_tags -%}
+            <ul class="blog-tags">
+              {%- for tag in blog.all_tags -%}
+                {%- if current_tags contains tag -%}
+                  <li class="overlay-tag">{{ tag }}</li>
+                {%- else -%}
+                  <li class="overlay-tag {% if alpha == 0 %}overlay-tag--inherit-color{% endif %}">{{ tag | link_to_tag: tag }}</li>
+                {%- endif -%}
+              {%- endfor -%}
+            </ul>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endunless -%}
+      
+    {% style %}
+      .blog .sticky-element .overlay {
+        top: {{ section.settings.overlay_position_y }}%;
+      }
+    {% endstyle %}
+    <div class="grid-no-gutter full-height {% unless section.settings.blog_magazine_layout %}container large-row container--no-mobile-padding single-column-layout{% else %}split-column-layout{% endunless %}">
+      {%- if section.settings.blog_magazine_layout -%}
+        <div class="grid__item-no-gutter one-half small-down--one-whole sticky-element" {{ block.shopify_attributes }}>
+          <div class="relative blog-featured-image">
+            <div class="avoid-overlaps">
+              {%- if section.settings.blog_image != blank -%}
+                <div class="rimage-background fade-in lazyload blog-image"
+                  data-bgset="{% render 'bgset', image: section.settings.blog_image %}"
+                  data-sizes="auto"
+                  data-parent-fit="cover">
+                  <noscript>
+                    <img src="{{ section.settings.blog_image | img_url: '1024x1024' }}" alt="{{ section.settings.blog_image.alt | escape }}" class="rimage-background__image">
+                  </noscript>
+                </div>
+              {%- else -%}
+                <div class="blog-image">
+                  {{ 'lifestyle-2' | append: current | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+              {%- endif -%}
+
+              {%- assign alpha = section.settings.color_overlay_bg | color_extract: 'alpha' -%}
+              {%- if section.settings.blog_show_tags -%}
+                {%- capture tags -%}
+                  <ul>
+                    {%- for tag in blog.all_tags -%}
+                      {%- if current_tags contains tag -%}
+                        <li class="overlay-tag global-border-radius-small">{{ tag }}</li>
+                      {%- else -%}
+                        <li class="overlay-tag global-border-radius-small {% if alpha == 0 %}overlay-tag--inherit-color{% endif %}">{{ tag | link_to_tag: tag }}</li>
+                      {%- endif -%}
+                    {%- endfor -%}
+                  </ul>
+                {%- endcapture -%}
+              {%- endif -%}
+
+              {%- capture blog_title -%}
+                {%- if current_tags == 0 -%}{ blog.title }}{%- else -%}{{ blog.title | link_to: blog.url }}{%- endif -%}
+              {%- endcapture -%}
+
+              {%- if section.settings.blog_show_rss -%}
+                {%- assign rss_icon = true -%}
+              {%- endif -%}
+
+              {% render 'image-overlay',
+                background_color: section.settings.color_overlay_bg,
+                background_opacity: section.settings.overlay_opacity,
+                text_color: section.settings.color_overlay_text,
+                title: blog_title,
+                text: section.settings.description,
+                url: blog.url,
+                footer: tags,
+                rssicon: rss_icon,
+                position: 'wide',
+                mobile_text_below: section.settings.mobile_text_below %}
+            </div>
+          </div>
+        </div>
+      {%- endif -%}
+      <div class="grid__item-no-gutter one-half small-down--one-whole">
+        <div class="blog-articles-list relative">
+          {%- if blog.articles_count == 0 -%}
+            {%- for i in (1..4) -%}
+              <article class="article">
+                <div class="article-image blog-articles-list__image global-border-radius placeholder-landscape-container">
+                  {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+                </div>
+                <div class="article-content">
+                    <h2 class="article__title standard-title">
+                      <a href="#">{{ 'homepage.onboarding.blog_title' | t }}</a>
+                    </h2>
+
+                    <div class="rte">
+                      <p>{{ 'homepage.onboarding.blog_excerpt' | t }}</p>
+                    </div>
+
+                    <div class="article__read-more">
+                      <a class="standard-link" href="#">
+                        {{ 'blogs.article.read_more' | t }}
+                      </a>
+                    </div>
+
+                    <div class="article__meta">
+                      {% if section.settings.blog_show_author or section.settings.blog_show_date %}
+                        <div class="article__authordate">
+                          <div class="article__authordate__inner">
+                            {% if section.settings.blog_show_author %}
+                              <div class="article__author">{{ 'homepage.onboarding.blog_author' | t }}</div>
+                            {% endif %}
+
+                            {% if section.settings.blog_show_date %}
+                              <div class="article__date">
+                                {{ 'now' | time_tag: format: 'month_day_year' }}
+                              </div>
+                            {% endif %}
+                          </div>
+                        </div>
+                      {% endif %}
+                    </div>
+                </div>
+              </article>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for article in blog.articles -%}
+              <article class="article">
+                {% if article.image %}
+                  <a href="{{ article.url }}" class="blog-articles-list__image">
+                    {% render 'responsive-image', image: article.image %}
+                  </a>
+                {% endif %}
+                <section class="article-block">
+                  <div class="article-content">
+                    <h2 class="article__title standard-title {% if article.image == blank %} article__title--no-image{% endif %}">
+                      <a href="{{ article.url }}">{{ article.title }}</a>
+                    </h2>
+
+                    <div class="rte article__content">
+                      {% if article.excerpt.size > 0 %}
+                        <p>{{ article.excerpt }}</p>
+                      {% else %}
+                        <p>{{ article.content | strip_html | truncate: 150 }}</p>
+                      {% endif %}
+                    </div>
+
+                    <div class="article__read-more">
+                      <a class="standard-link" href="{{ article.url }}">
+                        {{ 'blogs.article.read_more' | t }}
+                      </a>
+                    </div>
+
+                    {% if section.settings.article_show_tags and article.tags.size > 0 %}
+                      <div class="article__tags rte">
+                        {% for tag in article.tags %}
+                          <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="tag global-border-radius-small">{{ tag }}</a>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+
+                    <div class="flex article__meta">
+                      <div>
+                        {% if section.settings.blog_show_author or section.settings.blog_show_date %}
+                          <div class="article__authordate">
+                            {% if section.settings.blog_show_author and article.user.image %}
+                              <div class="article__avatar">
+                                <div class="rimage-background fade-in lazyload"
+                                  data-bgset="{% render 'bgset', image: article.user.image %}"
+                                  data-sizes="auto"
+                                  data-parent-fit="cover"></div>
+                              </div>
+                            {% endif %}
+
+                            <div class="article__authordate__inner">
+                              {% if section.settings.blog_show_author %}
+                                <div class="article__author">
+                                  {{ article.author }}
+                                </div>
+                              {% endif %}
+
+                              {% if section.settings.blog_show_date %}
+                                <div class="article__date">
+                                  {{ article.published_at | time_tag: format: 'month_day_year' }}
+                                </div>
+                              {% endif %}
+                            </div>
+                          </div>
+                        {% endif %}
+                      </div>
+                      {% if article.comments_count > 0 %}
+                        <div class="article__comments-summary">
+                          <a href="{{ article.url }}#comments">
+                            <span class="icon feather-icon icon-beside-text">{% render 'feather-message-circle' %}</span>
+                            <span class="text-beside-icon">{{ article.comments_count }} {{ 'blogs.comments.title' | t }}</span>
+                          </a>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+                  {% if section.settings.show_featured_products %}
+                    <div class="js-content-products-slider">
+                      {% render 'content-products', content: article.content %}
+                    </div>
+                  {% endif %}
+                </section>
+              </article>
+            {%- endfor -%}
+            {% render 'pagination', paginate: paginate %}
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  {%- endpaginate -%}
+</div>
+
+{% schema %}
+  {
+    "name": "Blog",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "blog_show_rss",
+        "label": "Show RSS icon",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "blog_show_tags",
+        "label": "Show all tags",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Blog posts"
+      },
+      {
+        "type": "checkbox",
+        "id": "blog_show_author",
+        "label": "Show author",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "blog_show_date",
+        "label": "Show date",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "article_show_tags",
+        "label": "Show tags for each article",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_featured_products",
+        "label": "Show featured products in articles",
+        "default": true,
+        "info": "Include links to products in your article to feature them underneath. [Learn more](https://cleancanvas.co.uk/support/boost-article-featured-products)"
+      },
+      {
+        "type": "header",
+        "content": "Magazine layout"
+      },
+      {
+        "type": "checkbox",
+        "id": "blog_magazine_layout",
+        "label": "Enable magazine layout",
+        "default": false
+      },
+      {
+        "type": "image_picker",
+        "id": "blog_image",
+        "label": "Image"
+      },
+      {
+        "type": "text",
+        "id": "description",
+        "label": "Description",
+        "default": "A world of inspiration"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 10,
+        "unit": "%"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Desktop vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      },
+      {
+        "type": "checkbox",
+        "id": "mobile_text_below",
+        "label": "Show text overlay below image on mobile"
+      }
+    ]
+  }
+{% endschema %}

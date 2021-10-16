@@ -1,0 +1,116 @@
+<!doctype html>
+<html class="no-js supports-no-cookies" lang="{{ request.locale.iso_code }}">
+<head>
+  <!-- Boost 2.0.1 -->
+  {% render 'head-tag' %}
+  <meta name="theme-color" content="{{ settings.primary_btn_background }}">
+
+  {% capture seo_title %}
+    {{ page_title }}
+    {% if current_tags %}
+      {%- assign meta_tags = current_tags | join: ', ' %} &ndash; {{ 'general.meta.tags' | t: tags: meta_tags -}}
+    {% endif %}
+    {% if current_page != 1 %}
+      &ndash; {{ 'general.meta.page' | t: page: current_page }}
+    {% endif %}
+    {% unless page_title contains shop.name %}
+      &ndash; {{ shop.name }}
+    {% endunless %}
+  {% endcapture %}
+  <title>{{ seo_title }}</title>
+
+  {% render 'social-meta-tags' %}
+
+  {{ 'styles.css' | asset_url | stylesheet_tag }}
+
+  <script>
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+    window.theme = window.theme || {};
+    window.slate = window.slate || {};
+    theme.moneyFormat = {{ shop.money_format | json }},
+    theme.strings = {
+      addToCart: {{ 'products.product.add_to_cart' | t | json }},
+      unavailable: {{ 'products.product.unavailable' | t | json }},
+      addressError: {{ 'map.errors.address_error' | t | json }},
+      addressNoResults: {{ 'map.errors.address_no_results' | t | json }},
+      addressQueryLimit: {{ 'map.errors.address_query_limit_html' | t | json }},
+      authError: {{ 'map.errors.auth_error' | t | json }},
+      addingToCart: {{ 'products.product.adding_to_cart' | t | json }},
+      addedToCart: {{ 'products.product.added' | t | json }},
+      addedToCartPopupTitle: {{ 'layout.cart.added_title' | t | json }},
+      addedToCartPopupItems: {{ 'layout.cart.items' | t | json }},
+      addedToCartPopupSubtotal: {{ 'layout.cart.subtotal' | t | json }},
+      addedToCartPopupGoToCart: {{ 'layout.cart.go_to_cart' | t | json }},
+      cartTermsNotChecked: {{ 'cart.terms.confirmation' | t | json }},
+      searchLoading: {{ 'layout.header.search_loading' | t | json }},
+      searchMoreResults: {{ 'layout.header.search_more_results' | t | json }},
+      searchNoResults: {{ 'layout.header.search_no_results' | t | json }},
+      priceFrom: {{ 'products.product.from_text' | t | json }},
+      quantityTooHigh: {{ 'cart.general.quantity_too_high' | t: quantity: '[[ quantity ]]' | json }},
+      onSale: {{ 'products.product.on_sale' | t | json }},
+      soldOut: {{ 'products.product.sold_out' | t | json }},
+      unitPriceSeparator: {{ 'products.product.unit_price_separator' | t | json }},
+      close: {{ 'general.accessibility_labels.close' | t | json }},
+      cart_shipping_calculator_hide_calculator: {{ 'cart.shipping_calculator.hide_calculator' | t | json }},
+      cart_shipping_calculator_title: {{ 'cart.shipping_calculator.title' | t | json }},
+      cart_general_hide_note: {{ 'cart.general.hide_note' | t | json }},
+      cart_general_show_note: {{ 'cart.general.show_note' | t | json }},
+      previous: {{'general.accessibility_labels.previous' | t | json }},
+      next: {{'general.accessibility_labels.next' | t | json }}
+    }
+    theme.routes = {
+      account_login_url: '{{ routes.account_login_url }}',
+      account_register_url: '{{ routes.account_register_url }}',
+      account_addresses_url: '{{ routes.account_addresses_url }}',
+      search_url: '{{ routes.search_url }}',
+      cart_url: '{{ routes.cart_url }}',
+      cart_add_url: '{{ routes.cart_add_url }}',
+      cart_change_url: '{{ routes.cart_change_url }}',
+      product_recommendations_url: '{{ routes.product_recommendations_url }}'
+    }
+    theme.settings = {
+      uniformProductGridImagesEnabled: {{ settings.align_product_titles | json }},
+      soldLabelEnabled: {{ settings.sold_label_enabled | json }},
+      saleLabelEnabled: {{ settings.sale_label_enabled | json }},
+      gridShowVendor: {{ settings.grid_show_vendor | json }}
+    }
+  </script>
+
+  {%- if template.directory == 'customers' -%}
+    <script src="{{ 'shopify_common.js' | shopify_asset_url }}" defer="defer"></script>
+  {%- endif -%}
+
+  {{ content_for_header }}
+</head>
+
+<body id="{{ page_title | handle }}" class="template-{{ template.name | handle }}">
+  <a class="in-page-link visually-hidden skip-link" href="#MainContent">{{ 'general.accessibility.skip_to_content' | t }}</a>
+
+  {% section 'header' %}
+  <div class="container breadcrumbs-container">
+    <div class="page-width">
+      {% render 'breadcrumbs', show_next_prev: true %}
+    </div>
+  </div>
+
+  <main id="MainContent">
+    {%- assign accent_alpha = settings.accent_color | color_extract: 'alpha' -%}
+    {%- if template contains 'index' and settings.color_body_background != settings.accent_color and accent_alpha > 0 -%}
+      <span class="accent-background"></span>
+    {%- endif -%}
+    {{ content_for_layout }}
+  </main>
+
+  {% section 'footer' %}
+  {% section 'popup' %}
+
+  <a href="#" class="focus-tint" aria-hidden="true" aria-label="{{ 'general.accessibility_labels.close' | t }}"></a>
+
+  {%- if template contains 'product' -%}
+    {% render 'photoswipe' %}
+  {%- endif -%}
+
+  <script src="{{ 'vendor.js' | asset_url }}" defer="defer"></script>
+  <script src="{{ 'theme.js' | asset_url }}" defer="defer"></script>
+</body>
+</html>

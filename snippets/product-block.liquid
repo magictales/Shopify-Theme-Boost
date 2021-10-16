@@ -1,0 +1,130 @@
+<div class="product-block {{ grid_class | default: 'grid-flex__item one-quarter small-down--one-half' }} {% if quickbuy %} js-contains-quickbuy{% endif %}">
+  <div class="product-block__image-container">
+    <div class="global-border-radius hover-images {% if settings.hover_image_enabled == true and product.media.size > 1 %} hover-images--two {% if product.featured_media.preview_image.aspect_ratio == product.media[1].preview_image.aspect_ratio %}same-aspect-ratio{% endif %}{% endif %} relative">
+      <a class="product-block__image" href="{{ product.url | within: collection }}">
+        {% if product.featured_media != blank %}
+
+          <div class="image-one">
+            {% render 'responsive-image', image: product.featured_media.preview_image %}
+          </div>
+          {% if settings.hover_image_enabled == true and product.media.size > 1 %}
+            <div class="image-two">
+              <div class="rimage-background fade-in lazyload"
+                    data-bgset="{% render 'bgset', image: product.media[1].preview_image %}"
+                    data-sizes="auto"
+                    data-parent-fit="cover">
+                <noscript>
+                  <img src="{{ product.media[1].preview_image | img_url: '1024x1024' }}" alt="{{ product.media[1].preview_image.alt | escape }}" class="rimage-background__image">
+                </noscript>
+              </div>
+            </div>
+          {% endif %}
+
+        {% else %}
+
+          {{- product.featured_media.preview_image | img_url: '600x600' | img_tag -}}
+
+        {% endif %}
+      </a>
+
+      {% if quickbuy %}
+        <a class="product-block__quicklook-btn btn--quicklook btn btn--primary js-quickbuy-button" href="{{ product.url }}">{{ 'products.quickbuy.quick_buy' | t }}</a>
+        {% render 'quick-buy-placeholder', product: product %}
+      {% endif %}
+
+    </div>
+  </div>
+
+  <div class="product-block__title">
+    <a href="{{ product.url | within: collection }}" class="product-block__title-link">{{ product.title }}</a>
+  </div>
+
+  {% if show_vendor %}
+    <div class="product-block__vendor">
+      {{- product.vendor -}}
+    </div>
+  {% endif %}
+
+  <div class="product-price">
+
+    {% if product.price_varies %}
+      <span class="product-price__from">{{ 'products.product.from_text' | t }}</span>
+    {% endif %}
+
+    {% if product.compare_at_price > product.price %}
+      <span class="product-price__reduced theme-money">
+        {{ product.price | money }}
+      </span>
+    {% else %}
+      <span class="theme-money">{{ product.price | money }}</span>
+    {% endif %}
+
+    {% if product.compare_at_price > product.price %}
+      <span class="visually-hidden">{{ 'products.product.regular_price' | t }}</span>
+      <span class="product-price__compare theme-money">{{ product.compare_at_price | money }}</span>
+    {% endif %}
+
+    {%- assign variant = product.variants | sort: 'price' | first -%}
+    {% render 'unit-price', variant: variant %}
+
+    {% if product.available %}
+      {% if product.compare_at_price_max > product.price and settings.sale_label_enabled %}
+        <span class="product-label product-label--on-sale global-border-radius">{{ 'products.product.on_sale' | t }}</span>
+      {% endif %}
+    {% elsif settings.sold_label_enabled %}
+      <span class="product-label product-label--sold-out global-border-radius">{{ 'products.product.sold_out' | t }}</span>
+    {% endif %}
+
+  </div>
+
+  {% if settings.swatch_enabled %}
+    {%- for option in product.options -%}
+      {%- if option == settings.swatch_option_name -%}
+        {%- capture value_key -%}option{{ forloop.index }}{%- endcapture -%}
+        {%- capture colours -%},{%- endcapture -%}
+        {%- for variant in product.variants -%}
+          {%- capture colour_compare -%},{{ variant[value_key] }},{%- endcapture -%}
+          {%- unless colours contains colour_compare -%}
+            {%- capture colours -%}{{ colours }}{{ variant[value_key] }},{%- endcapture -%}
+          {%- endunless -%}
+        {%- endfor -%}
+
+        {%- assign colours = colours | split: ',' -%}
+        {%- assign non_blank_colours = 0 -%}
+        {%- if settings.swatch_method == 'images' -%}
+          <style>
+          {%- for colour in colours -%}
+            {%- unless colour == blank -%}
+              {%- assign non_blank_colours = non_blank_colours | plus: 1 -%}
+              {%- if settings.variant_style == 'listed' -%}
+              select[data-colour-swatch="true"] + .clickyboxes .opt--{{ colour | handle }}::after {
+                background-image: url({{ colour | handle | append: '.png' | file_img_url: '40x40', crop: 'center' }});
+              }
+              {%- else -%}
+              .select2-container .swatch-option__nugget.bg-{{ colour | handle }} {
+                background-image: url({{ colour | handle | append: '.png' | file_img_url: '40x40', crop: 'center' }});
+              }
+              {%- endif -%}
+            {%- endunless -%}
+          {%- endfor -%}
+          </style>
+        {%- else -%}
+          {%- for colour in colours -%}
+            {%- unless colour == blank -%}{%- assign non_blank_colours = non_blank_colours | plus: 1 -%}{%- endunless -%}
+          {%- endfor -%}
+        {%- endif -%}
+        <div class="product-swatch-inline" data-swatch-count="{{ non_blank_colours }}">
+          {%- for colour in colours -%}
+            {% unless colour == blank %}
+              <span class="product-swatch-inline__dot bg-{{ colour | handle }}" {% if settings.swatch_method == 'images' %}style="background-image: url({{ colour | handle | append: '.png' | file_img_url: '40x40', crop: 'center' }})"{% endif %}></span>
+            {% endunless %}
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    {%- endfor -%}
+  {% endif %}
+
+  <div class="theme-product-reviews-summary">
+    <span class="shopify-product-reviews-badge" data-id="{{ product.id }}"></span>
+  </div>
+</div>

@@ -1,0 +1,346 @@
+{
+  "sections": {
+    "slideshow": {
+      "type": "slideshow",
+      "blocks": {
+        "slide-0": {
+          "type": "image",
+          "settings": {
+            "image": "shopify:\/\/shop_images\/Illustration_hero.png",
+            "image_position": "bottom center",
+            "image_link": "",
+            "color_overlay_bg": "#ffffff",
+            "overlay_opacity": 90,
+            "color_overlay_text": "#333333",
+            "overlay_title": "Let your child choose books with Huey",
+            "overlay_text": "Find books fast that match your child's interests, age and general reading ability.",
+            "overlay_url_text_1": "Start",
+            "overlay_url_1": "",
+            "overlay_url_text_2": "",
+            "overlay_url_2": "",
+            "overlay_url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false,
+            "overlay_position_x": 50,
+            "overlay_position_y": 48,
+            "color_label_background": "#ffffff",
+            "color_label_text": "#333333",
+            "show_chevron": true,
+            "product_id_1": "",
+            "chevron_position_1": "right",
+            "label_position_x_1": 20,
+            "label_position_y_1": 30,
+            "product_id_2": "",
+            "chevron_position_2": "right",
+            "label_position_x_2": 80,
+            "label_position_y_2": 50
+          }
+        },
+        "slide-1": {
+          "type": "image",
+          "disabled": true,
+          "settings": {
+            "image_position": "center center",
+            "image_link": "",
+            "color_overlay_bg": "#ffffff",
+            "overlay_opacity": 80,
+            "color_overlay_text": "#333333",
+            "overlay_title": "Slideshow",
+            "overlay_text": "Use this section to welcome customers to your store, show off your images or display a promotion",
+            "overlay_url_text_1": "",
+            "overlay_url_1": "",
+            "overlay_url_text_2": "",
+            "overlay_url_2": "",
+            "overlay_url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false,
+            "overlay_position_x": 50,
+            "overlay_position_y": 70,
+            "color_label_background": "#ffffff",
+            "color_label_text": "#333333",
+            "show_chevron": true,
+            "product_id_1": "",
+            "chevron_position_1": "right",
+            "label_position_x_1": 20,
+            "label_position_y_1": 30,
+            "product_id_2": "",
+            "chevron_position_2": "right",
+            "label_position_x_2": 80,
+            "label_position_y_2": 50
+          }
+        }
+      },
+      "block_order": [
+        "slide-0",
+        "slide-1"
+      ],
+      "settings": {
+        "height": "adapt",
+        "height_desktop": 600,
+        "height_mobile": 500,
+        "mobile_text_below": true,
+        "slideshow_autoplay": true,
+        "slideshow_autoplay_speed": 6
+      }
+    },
+    "collection-list": {
+      "type": "collection-list",
+      "blocks": {
+        "collection-0": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection-1": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection-2": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        },
+        "collection-3": {
+          "type": "collection",
+          "settings": {
+            "collection": ""
+          }
+        }
+      },
+      "block_order": [
+        "collection-0",
+        "collection-1",
+        "collection-2",
+        "collection-3"
+      ],
+      "settings": {
+        "title": "Books by style",
+        "enlarge_title": false,
+        "grid": 4
+      }
+    },
+    "featured-collection": {
+      "type": "featured-collection",
+      "settings": {
+        "title": "Books by Age",
+        "enlarge_title": false,
+        "link_text": "Shop now",
+        "collection": "",
+        "show_vendor": false,
+        "enable_carousel": false,
+        "grid": 4,
+        "row_count": 1,
+        "grid_mobile": "2"
+      }
+    },
+    "image-with-text": {
+      "type": "image-with-text",
+      "settings": {
+        "image": "shopify:\/\/shop_images\/Book_cover_etched_marsh_edited_small_909ca841-b101-419e-a868-1c87701fe1e1.png",
+        "image_link": "",
+        "image_size": "60",
+        "image_position": "left",
+        "title": "Books picked by Teacher Librarians",
+        "text": "<p>A selection of books picked by the talented Teacher Librarian at a school near you!<\/p>",
+        "button_label": "View Books >",
+        "button_link": "",
+        "url_style": "button_1",
+        "enlarge_title": false,
+        "enlarge_text": false,
+        "text_alignment": "center",
+        "color_bg": "#479f87",
+        "color_text": "#ffffff"
+      }
+    },
+    "promo-images": {
+      "type": "promotional-images",
+      "blocks": {
+        "image-0": {
+          "type": "image",
+          "settings": {
+            "image_position": "center center",
+            "image_link": "",
+            "layout": "image_before",
+            "color_background": "#dae4e6",
+            "color_text": "#333333",
+            "overlay_opacity": 80,
+            "title": "<p>Combine images with text and a stand-out offer<\/p>",
+            "offer": "Offer",
+            "url_text": "",
+            "url": "",
+            "url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false
+          }
+        },
+        "image-1": {
+          "type": "image",
+          "settings": {
+            "image_position": "center center",
+            "image_link": "",
+            "layout": "image_after",
+            "color_background": "#dae4e6",
+            "color_text": "#333333",
+            "overlay_opacity": 80,
+            "title": "<p>Combine images with text and a stand-out offer<\/p>",
+            "offer": "Offer",
+            "url_text": "",
+            "url": "",
+            "url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false
+          }
+        }
+      },
+      "block_order": [
+        "image-0",
+        "image-1"
+      ],
+      "settings": {}
+    },
+    "rich-text": {
+      "type": "rich-text",
+      "settings": {
+        "title": "Rich text",
+        "text": "<p>Use this section to share information about your brand with your customers.<\/p><p><br\/><\/p><p>Describe a product, share announcements, or welcome customers to your store.<\/p>",
+        "button_label": "",
+        "button_link": "",
+        "url_style": "button_1",
+        "enlarge_title": false,
+        "enlarge_text": false,
+        "full_width": false,
+        "color_bg": "#ecf1f2",
+        "color_title": "#333333",
+        "color_text": "#333333"
+      }
+    },
+    "standout-collection": {
+      "type": "standout-collection",
+      "settings": {
+        "collection": "",
+        "collection_background": "#fbdfdb",
+        "image_position": "center center",
+        "layout": "left",
+        "show_vendor": false,
+        "color_overlay_bg": "#ffffff",
+        "overlay_opacity": 80,
+        "color_overlay_text": "#333333",
+        "overlay_url_text": "Shop now",
+        "url_style": "button_1",
+        "enlarge_title": false,
+        "overlay_position_y": 70,
+        "color_label_background": "#ffffff",
+        "color_label_text": "#333333",
+        "product_id": "",
+        "show_chevron": true,
+        "chevron_position": "right",
+        "label_position_x": 10,
+        "label_position_y": 30
+      }
+    },
+    "split-image": {
+      "type": "split-image",
+      "blocks": {
+        "image-0": {
+          "type": "image",
+          "settings": {
+            "image_link": "",
+            "image_position": "center center",
+            "color_overlay_bg": "#ffffff",
+            "overlay_opacity": 80,
+            "color_overlay_text": "#333333",
+            "overlay_title": "Split image",
+            "overlay_text": "Display images side by side",
+            "overlay_url_text": "",
+            "overlay_url": "",
+            "overlay_url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false,
+            "overlay_position_x": 50,
+            "overlay_position_y": 80,
+            "mobile_text_below": false,
+            "color_label_background": "#ffffff",
+            "color_label_text": "#333333",
+            "product_id": "",
+            "show_chevron": true,
+            "chevron_position": "right",
+            "label_position_x": 20,
+            "label_position_y": 20
+          }
+        },
+        "image-1": {
+          "type": "image",
+          "settings": {
+            "image_link": "",
+            "image_position": "center center",
+            "color_overlay_bg": "#ffffff",
+            "overlay_opacity": 80,
+            "color_overlay_text": "#333333",
+            "overlay_title": "Split image",
+            "overlay_text": "Display images side by side",
+            "overlay_url_text": "",
+            "overlay_url": "",
+            "overlay_url_style": "button_1",
+            "enlarge_title": false,
+            "enlarge_text": false,
+            "overlay_position_x": 50,
+            "overlay_position_y": 20,
+            "mobile_text_below": false,
+            "color_label_background": "#ffffff",
+            "color_label_text": "#333333",
+            "product_id": "",
+            "show_chevron": true,
+            "chevron_position": "right",
+            "label_position_x": 80,
+            "label_position_y": 80
+          }
+        }
+      },
+      "block_order": [
+        "image-0",
+        "image-1"
+      ],
+      "settings": {
+        "height_desktop": 600,
+        "height_mobile": 500
+      }
+    },
+    "featured-blog": {
+      "type": "featured-blog",
+      "settings": {
+        "image_position": "center center",
+        "title": "Blog posts",
+        "description": "Short description of your blog",
+        "color_overlay_bg": "#ffffff",
+        "overlay_opacity": 80,
+        "color_overlay_text": "#333333",
+        "show_view_all": true,
+        "overlay_url_style": "button_1",
+        "enlarge_title": false,
+        "enlarge_text": false,
+        "overlay_position_y": 70,
+        "blog": "news",
+        "post_limit": 3,
+        "show_author": false,
+        "show_date": true,
+        "show_tags": true,
+        "show_featured_products": true
+      }
+    }
+  },
+  "order": [
+    "slideshow",
+    "collection-list",
+    "featured-collection",
+    "image-with-text",
+    "promo-images",
+    "rich-text",
+    "standout-collection",
+    "split-image",
+    "featured-blog"
+  ]
+}

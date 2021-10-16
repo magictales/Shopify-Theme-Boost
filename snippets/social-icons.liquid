@@ -1,0 +1,36 @@
+{% capture social_icon_html %}
+  <div class="social-links {{ container_class }}">
+    <ul class="social-links__list">
+      {% if settings.social_twitter_url != blank %}
+        <li><a aria-label="Twitter" class="twitter" target="_blank" rel="noopener" href="{{ settings.social_twitter_url }}">{% render 'svg-twitter' %}</a></li>
+      {% endif %}
+      {% if settings.social_facebook_url != blank %}
+        <li><a aria-label="Facebook" class="facebook" target="_blank" rel="noopener" href="{{ settings.social_facebook_url }}">{% render 'svg-facebook' %}</a></li>
+      {% endif %}
+      {% if settings.social_youtube_url != blank %}
+        <li><a aria-label="Youtube" class="youtube" target="_blank" rel="noopener" href="{{ settings.social_youtube_url }}">{% render 'svg-youtube' %}</a></li>
+      {% endif %}
+      {% if settings.social_vimeo_url != blank %}
+        <li><a aria-label="Vimeo" class="vimeo" target="_blank" rel="noopener" href="{{ settings.social_vimeo_url }}">{% render 'svg-vimeo' %}</a></li>
+      {% endif %}
+      {% if settings.social_instagram_url != blank %}
+        <li><a aria-label="Instagram" class="instagram" target="_blank" rel="noopener" href="{{ settings.social_instagram_url }}">{% render 'svg-instagram' %}</a></li>
+      {% endif %}
+      {% if settings.social_pinterest_url != blank %}
+        <li><a aria-label="Pinterest" class="pinterest" target="_blank" rel="noopener" href="{{ settings.social_pinterest_url }}">{% render 'svg-pinterest' %}</a></li>
+      {% endif %}
+      {% if settings.social_tiktok_url != blank %}
+        <li><a aria-label="Tiktok" class="tiktok" target="_blank" rel="noopener" href="{{ settings.social_tiktok_url }}">{% render 'svg-tiktok' %}</a></li>
+      {% endif %}
+
+      {% if settings.social_custom_url != blank %}
+        <li>
+          <a aria-label="{{ icon_setting.alt | escape }}" class="social-custom" target="_blank" rel="noopener" href="{{ settings.social_custom_url }}">
+            <img src="{{ icon_setting | img_url: icon_size }}" alt="{{ icon_setting.alt }}" width="{{ icon_setting.width }}" height="{{ icon_setting.height }}"/>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+{% endcapture %}
+{% if social_icon_html contains '<li>' %}{{ social_icon_html }}{% endif %}

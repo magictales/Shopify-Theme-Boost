@@ -1,0 +1,869 @@
+{%- capture image_size -%}{{ section.settings.logo_width | times: 2 }}x{%- endcapture -%}
+{% style %}
+  .store-logo--image{
+    max-width: {{ section.settings.logo_width }}px;
+    width: {{ section.settings.logo_width }}px;
+  }
+
+  @media only screen and (max-width: 939px) {
+    .store-logo--image {
+      width: auto;
+    }
+  }
+
+  {% if section.settings.desktop_layout == 'center' %}
+    .utils__item--search-icon,
+    .settings-open-bar--small,
+    .utils__right {
+      width: calc(50% - ({{ section.settings.logo_width }}px / 2));
+    }
+  {% endif %}
+{% endstyle %}
+
+{%- capture logo_html -%}
+  <!-- LOGO / STORE NAME -->
+  {%- if template.name == 'index' -%}
+    <h1 class="h1 store-logo {% if section.settings.desktop_layout == 'center' %} hide-for-search{% endif %} {% if section.settings.logo_position_mobile == 'inline' %} hide-for-search-mobile{% endif %} store-logo--{% if section.settings.logo != blank %}image {% else %}text {% endif %} store-logo-desktop--{{ section.settings.desktop_layout }} store-logo-mobile--{{ section.settings.logo_position_mobile }}" itemscope itemtype="http://schema.org/Organization">
+  {%- else -%}
+    <div class="h1 store-logo {% if section.settings.desktop_layout == 'center' %} hide-for-search{% endif %} {% if section.settings.logo_position_mobile == 'inline' %} hide-for-search-mobile{% endif %}   store-logo--{% if section.settings.logo != blank %}image{% else %}text{% endif %} store-logo-desktop--{{ section.settings.desktop_layout }} store-logo-mobile--{{ section.settings.logo_position_mobile }}" itemscope itemtype="http://schema.org/Organization">
+  {%- endif -%}
+
+  <!-- DESKTOP LOGO -->
+  <a href="{{ routes.root_url }}" itemprop="url" class="site-logo{% if section.settings.logo != blank %} site-header__logo-image{% endif %}">
+    <meta itemprop="name" content="{{ shop.name }}">
+    {%- if section.settings.logo != blank -%}
+      {% render 'responsive-image', image: section.settings.logo %}
+    {%- else -%}
+      {{ shop.name }}
+    {%- endif -%}
+  </a>
+
+  {%- if template.name == 'index' -%}
+    </h1>
+  {%- else -%}
+    </div>
+  {%- endif -%}
+{%- endcapture -%}
+
+{%- capture desktop_search_icon_html -%}
+  {% unless section.settings.show_search_bar_desktop %}
+  <!-- DESKTOP SEARCH ICON-->
+    <div class="utils__item utils__item--search-icon utils__item--search-{{ section.settings.desktop_layout }} hide-for-search desktop-only">
+      <a href="{{ routes.search_url }}" class="plain-link js-search-form-open" aria-label="{{ 'general.accessibility_labels.search' | t | escape }}">
+        <span class="feather-icon icon--header">
+          {% render 'feather-search' %}
+        </span>
+        <span class="icon-fallback-text">{{ 'general.search.submit' | t }}</span>
+      </a>
+    </div>
+  {% endunless %}
+{%- endcapture -%}
+
+{%- capture mobile_search_icon_html -%}
+  <!-- MOBILE SEARCH ICON-->
+  <a href="{{ routes.search_url }}" class="plain-link utils__item utils__item--search-icon utils__item--search-{{ section.settings.logo_position_mobile }} hide-for-search mobile-only js-search-form-open" aria-label="{{ 'general.accessibility_labels.search' | t | escape }}">
+    <span class="feather-icon icon--header">
+      {% render 'feather-search' %}
+    </span>
+    <span class="icon-fallback-text">{{ 'general.search.submit' | t }}</span>
+  </a>
+{%- endcapture -%}
+
+{%- capture desktop_search_html -%}
+<!-- DESKTOP SEARCH -->
+  {% assign search_id = 'open-search-closed '%}
+  {% if section.settings.show_search_bar_desktop %}
+    {% capture search_bar_class %}settings-open-bar desktop-only {% if section.settings.desktop_layout == 'center' %} settings-open-bar--small{% endif%}{% endcapture %}
+    {% assign search_id = 'open-search-bar '%}
+  {% else %}
+    {% capture search_bar_class %}{% if section.settings.desktop_layout == 'left' %}settings-close-bar--left{% endif%} desktop-only{% endcapture %}
+  {% endif %}
+
+  {% render 'search-bar', settings_class: search_bar_class, search_id: search_id %}
+{%- endcapture -%}
+
+{%- capture mobile_search_html -%}
+  <!-- MOBILE SEARCH -->
+  {% assign search_id = 'open-search-mobile-closed '%}
+  {% if section.settings.show_search_bar_mobile %}
+    {% capture search_bar_class %} settings-open-mobile-bar{% endcapture %}
+    {% assign search_id = 'open-search-mobile-bar '%}
+  {% else %}
+    {% capture search_bar_class %} settings-close-mobile-bar{% endcapture %}
+  {% endif %}
+
+  {% render 'search-bar-mobile', settings_class: search_bar_class, search_id: search_id %}
+{%- endcapture -%}
+
+{%- capture account_html -%}
+  <div class="utils__item customer-account hide-for-search">
+    <a href="{{ routes.account_url }}" class="customer-account__parent-link feather-icon icon--header" aria-haspopup="true" aria-expanded="false" aria-label="{{ 'general.accessibility_labels.account' | t | escape }}">{% render 'icon-account' %}</a>
+    <ul class="customer-account__menu">
+      {% if customer %}
+        <li class="customer-account__link">
+          {% if customer.first_name != blank %}
+            {% capture first_name %}<a href="{{ routes.account_url }}">{{ customer.first_name }}</a>{% endcapture %}
+            {{ 'layout.customer.logged_in_as_html' | t: first_name: first_name }}
+          {% endif %}
+        </li>
+        <li class="customer-account__link">
+          <a href="{{ routes.account_url }}">{{ 'layout.customer.account' | t }}</a>
+        </li>
+        <li class="customer-account__link customer-logout">
+          <a href="{{ routes.account_logout_url }}">
+            {{ 'layout.customer.log_out' | t }}
+          </a>
+        </li>
+      {% else %}
+        <li class="customer-account__link customer-login">
+          <a href="{{ routes.account_login_url }}">
+            {{ 'layout.customer.log_in' | t }}
+          </a>
+        </li>
+        <li class="customer-account__link customer-register">
+          <a href="{{ routes.account_register_url }}">
+          {{ 'layout.customer.create_account' | t }}
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </div>
+{%- endcapture -%}
+
+{%- if template == 'gift_card' -%}
+
+  <div class="site-header site-header--logo-only">
+    <header class="header-content container">
+      <div class="page-header page-width">
+        <div class="h1 store-logo store-logo--{% if section.settings.logo != blank %}image{% else %}text{% endif %}"
+          itemscope itemtype="http://schema.org/Organization">
+          <meta itemprop="url" content="{{ shop.url }}">
+          <meta itemprop="name" content="{{ shop.name }}">
+          {% if section.settings.logo != blank %}
+            <h1 class="site-logo site-header__logo-image">
+              {% capture img_size %}{{ section.settings.logo_width | times: 2 }}x{% endcapture %}
+              <img src="{{ section.settings.logo | img_url: img_size }}" alt="{{ section.settings.logo.alt | escape }}" itemprop="logo" width="{{ section.settings.logo.width }}" height="{{ section.settings.logo.height }}">
+            </h1>
+          {% else %}
+            <h1 class="site-logo">{{ shop.name }}</h1>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+  </div>
+
+{%- else -%}
+
+  <div class="site-header {% if section.settings.dock_nav %}docking-header{% endif %}" data-section-id="{{ section.id }}" data-section-type="header" role="banner">
+
+    {%- if section.settings.show_announcement_bar -%}
+      {%- if section.settings.home_only_announcement_bar == false or template == 'index' -%}
+        <section class="announcement-bar">
+          {%- if section.settings.announcement_bar_url != blank -%}
+          <a href="{{ section.settings.announcement_bar_url }}" class="announcement-bar__content container">{{ section.settings.announcement_bar_text }}</a>
+          {%- else -%}
+          <div class="announcement-bar__content container">{{ section.settings.announcement_bar_text }}</div>
+          {%- endif -%}
+        </section>
+      {%- endif -%}
+    {%- endif -%}
+
+    <header class="header-content container">
+      <div class="page-header page-width">
+
+        {%- if section.settings.desktop_layout == 'left' or section.settings.logo_position_mobile == 'own_row' -%}
+          {{ logo_html }}
+        {%- endif -%}
+
+        {%- if section.settings.dock_nav -%}
+        <div class="docked-mobile-navigation-container">
+        <div class="docked-mobile-navigation-container__inner">
+        {%- endif -%}
+
+        <div class="utils relative {% if section.settings.desktop_layout == 'center' %} utils--center{% endif %}">
+          <!-- MOBILE BURGER -->
+          <button class="btn btn--plain burger-icon feather-icon js-mobile-menu-icon hide-for-search" aria-label="{{ 'general.accessibility_labels.menu_toggle' | t }}">
+            {% render 'feather-menu' %}
+          </button>
+
+          {%- if section.settings.desktop_layout == 'center' -%}
+            {{ desktop_search_icon_html }}
+            {{ desktop_search_html }}
+          {%- endif -%}
+
+          {%- if section.settings.desktop_layout == 'center' or section.settings.logo_position_mobile == 'inline' -%}
+            {{ logo_html }}
+          {%- endif -%}
+
+          {%- if section.settings.desktop_layout == 'left' and section.settings.show_search_bar_desktop == true -%}
+            {{ desktop_search_html }}
+          {%- endif -%}
+
+
+          <div class="utils__right">
+            {%- if section.settings.show_currency_selector or section.settings.show_locale_selector -%}
+              <!-- CURRENCY CONVERTER -->
+              <div class="utils__item utils__item--currency header-localization header-localization--desktop hide-for-search">
+                {% render 'localization', input_prefix: 'desktop-header' %}
+              </div>
+            {%- endif -%}
+
+            {%- if section.settings.desktop_layout == 'left' and section.settings.show_search_bar_desktop == false -%}
+              {{ desktop_search_icon_html }}
+              {{ desktop_search_html }}
+            {%- endif -%}
+
+            {%- if section.settings.show_search_bar_mobile == false -%}
+              {{ mobile_search_icon_html }}
+              {{ mobile_search_html }}
+            {%- endif -%}
+
+            <!-- ACCOUNT -->
+            {% if shop.customer_accounts_enabled %}
+              {{ account_html }}
+            {% endif %}
+
+            <!-- CART -->
+            {% capture cart_html %}
+            <div class="utils__item header-cart hide-for-search">
+              <a href="{{ routes.cart_url }}">
+                <span class="feather-icon icon--header">{% render 'feather-bag' %}</span>
+                <span class="header-cart__count">{{ cart.item_count }}</span>
+              </a>
+              {% unless cart.items == empty or template contains 'cart' %}
+                <div class="cart-summary global-border-radius">
+                  <div class="cart-summary__header">{{ 'layout.cart.title' | t }}:</div>
+                  <div class="cart-summary__product-list">
+                    {% for item in cart.items %}
+                      <div class="cart-summary__product">
+                        <div class="cart-summary__product-image">
+                          {% render 'responsive-image', image: item.image %}
+                        </div>
+                        <div class="cart-summary__product__description">
+                          <div class="cart-summary__product-title">
+                            {{ item.product.title | link_to: item.product.url }}
+                            {% if item.quantity > 1 %}
+                              <span class="cart-summary__quantity">{{ item.quantity }}</span>
+                            {% endif %}
+                          </div>
+                          <div class="cart-summary__product__variants">
+                            {% for option in item.product.options %}
+                              {% capture value_key %}option{{ forloop.index }}{% endcapture %}
+                              {% if item.variant[value_key] != 'Default Title' %}
+                                <div class="added-notice__variant">
+                                  <span class="added-notice__variant-label">{{ option }}:</span>
+                                  <span class="added-notice__variant-value">{{ item.variant[value_key] }}</span>
+                                </div>
+                              {% endif %}
+                            {% endfor %}
+                          </div>
+                          {% if item.selling_plan_allocation %}
+                            <div class="cart-summary__selling-plan small-text">{{ item.selling_plan_allocation.selling_plan.name }}</div>
+                          {% endif %}
+                          <div class="cart-summary__price">
+                            {% if item.original_line_price != item.final_line_price %}
+                            <span class="product-price__reduced theme-money">{{ item.final_line_price | money }}</span>
+                              <span class="product-price__compare theme-money">{{ item.original_line_price | money }}</span>
+                            {% else %}
+                              <span class="theme-money">{{ item.final_line_price | money }}</span>
+                            {% endif %}
+                            {%- if item.unit_price_measurement -%}
+                              <div class="cart-summary__unit-price">
+                                {% render 'unit-price', variant: item %}
+                              </div>
+                            {%- endif -%}
+
+                            {% if item.line_level_discount_allocations.size > 0 %}
+                              <ul class="cart-discount-list small-text">
+                              {% for discount_allocation in item.line_level_discount_allocations %}
+                                <li class="cart-discount cart-discount--inline">
+                                  <span class="cart-discount__label">{{ discount_allocation.discount_application.title }}</span>
+                                  <span class="cart-discount__amount theme-money">{{ discount_allocation.amount | money }}</span>
+                                </li>
+                              {% endfor %}
+                              </ul>
+                            {% endif %}
+                          </div>
+                        </div>
+                      </div>
+                    {% endfor %}
+                  </div>
+                  <div class="cart-summary__footer">
+                    <div class="cart-summary__total-quantity-row">
+                      <span>{{ 'layout.cart.items' | t }}</span>
+                      <span>{{ cart.item_count }}</span>
+                    </div>
+
+                    {%- if cart.cart_level_discount_applications != blank -%}
+                      <ul class="cart-discount-list">
+                        {%- for discount_application in cart.cart_level_discount_applications -%}
+                          <li class="cart-discount cart-discount--inline">
+                            <span class="cart-discount__label">{{ discount_application.title }}</span>
+                            <span class="cart-discount__amount theme-money">{{ discount_application.total_allocated_amount | money }}</span>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+                    {%- endif -%}
+
+                    <div class="cart-summary__total-price-row large-text">
+                      <span>{{ 'layout.cart.subtotal' | t }}</span>
+                      <span class="theme-money">{{ cart.total_price | money }}</span>
+                    </div>
+
+                    <a class="btn btn--primary btn--small btn--fullwidth cart-summary__button" href="{{ routes.cart_url }}">{{ 'layout.cart.go_to_cart' | t }}</a>
+                  </div>
+                </div>
+              {% endunless %}
+            </div>
+            {% endcapture %}
+            {{ cart_html }}
+          </div>
+
+        </div>
+
+        {% if section.settings.dock_nav %}
+        </div>
+        </div>
+        {% endif %}
+      </div>
+    </header>
+
+    {% if section.settings.dock_nav %}
+    <div class="docked-navigation-container docked-navigation-container--{{ section.settings.desktop_layout }}">
+    <div class="docked-navigation-container__inner">
+    {% endif %}
+
+    <section class="header-navigation container">
+      <nav class="navigation__container page-width {% if section.settings.show_search_bar_mobile == true %}mobile-nav-no-margin-top{% endif %}">
+
+        <!-- DOCKED NAV SEARCH CENTER LAYOUT-->
+        {%- if section.settings.dock_nav and section.settings.desktop_layout == 'center' -%}
+          <div class="docking-header__utils docking-header__center-layout-search">
+            <a href="{{ routes.search_url }}" class="plain-link utils__item hide-for-search js-search-form-open" aria-label="{{ 'general.accessibility_labels.search' | t | escape }}">
+              <span class="feather-icon icon--header">
+                {% render 'feather-search' %}
+              </span>
+              <span class="icon-fallback-text">{{ 'general.search.submit' | t }}</span>
+            </a>
+          </div>
+        {%- endif -%}
+
+        <!-- MOBILE MENU UTILS -->
+        <div class="mobile-menu-utils">
+          {%- if section.settings.show_currency_selector or section.settings.show_locale_selector -%}
+            <!-- MOBILE MENU LOCALIZATION -->
+            <div class="utils__item utils__item--currency header-localization header-localization--mobile hide-for-search">
+              {% render 'localization', input_prefix: 'mobile-header' %}
+            </div>
+          {%- endif -%}
+          <!-- MOBILE MENU CLOSE -->
+          <button class="btn btn--plain close-mobile-menu js-close-mobile-menu" aria-label="{{ 'general.accessibility_labels.close' | t }}">
+            <span class="feather-icon icon--header">
+              {% render 'feather-x' %}
+            </span>
+          </button>
+        </div>
+
+        <!-- MOBILE MENU SEARCH BAR -->
+        <div class="mobile-menu-search-bar">
+          {% render 'search-bar-mobile', settings_class: 'mobile-menu-search', search_id: 'mobile-menu-search' %}
+        </div>
+
+        <!-- MOBILE MENU -->
+        <ul class="nav mobile-site-nav">
+          {% for link in linklists[section.settings.main_linklist].links %}
+            <li class="mobile-site-nav__item">
+              <a href="{{ link.url }}" class="mobile-site-nav__link">
+                {{ link.title }}
+              </a>
+              {% if link.links != blank %}
+                <button class="btn--plain feather-icon mobile-site-nav__icon" aria-label="{{ 'general.accessibility_labels.open_dropdown' | t }}">{% render 'svg-chevron-down' %}</button>
+              {% endif %}
+              {% if link.links != blank %}
+                <ul class="mobile-site-nav__menu">
+                  {% for childlink in link.links %}
+                    <li class="mobile-site-nav__item">
+                      <a href="{{ childlink.url }}" class="mobile-site-nav__link">
+                        {{ childlink.title }}
+                      </a>
+                      {% if childlink.links != blank %}
+                        <button class="btn--plain feather-icon mobile-site-nav__icon" aria-haspopup="true" aria-expanded="false" aria-label="{{ 'general.accessibility_labels.open_dropdown' | t }}">{% render 'svg-chevron-down' %}</button>
+                      {% endif %}
+                      {% if childlink.links != blank %}
+                        <ul class="mobile-site-nav__menu">
+                          {% for childestlink in childlink.links %}
+                            <li class="mobile-site-nav__item">
+                              <a href="{{ childestlink.url }}" class="mobile-site-nav__link">
+                                {{ childestlink.title }}
+                              </a>
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </li>
+                  {% endfor %}
+                </ul>
+              {% endif %}
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div class="header-social-icons">
+          {% render 'social-icons', icon_setting: settings.social_custom_icon, icon_size: '48x' %}
+        </div>
+
+        <!-- MAIN MENU -->
+        <ul class="nav site-nav {% if section.settings.desktop_layout == 'center' %} site-nav--center{% endif %}">
+          {% for link in linklists[section.settings.main_linklist].links %}
+            {%- assign link_count = link.links | size -%}
+
+            {% if link.links != blank %}
+              {%- if link.levels <= 1 -%}
+                {% assign dropdown_type = 'small' %}
+              {%- else -%}
+                {%- if link_count <= 1 -%}
+                  {% assign dropdown_type = 'small' %}
+                {%- else -%}
+                  {% assign dropdown_type = 'mega' %}
+                {%- endif -%}
+              {%- endif -%}
+
+              <li class="site-nav__item site-nav__item--has-dropdown
+                        {% if link.active %}site-nav__item--active{% endif %}
+                        site-nav__item--{{ dropdown_type }}dropdown">
+                <a href="{{ link.url }}" class="site-nav__link" aria-haspopup="true" aria-expanded="false">
+                  {{ link.title }}
+                  <span class="feather-icon site-nav__icon">{% render 'svg-chevron-down' %}</span>
+                </a>
+
+                {%- assign has_promo = false -%}
+                {%- for block in section.blocks -%}
+                  {%- capture setting_link_title_dcase -%}{{ block.settings.dropdown_link_title | downcase }}{%- endcapture -%}
+                  {%- capture link_title_dcase -%}{{ link.title | downcase }}{%- endcapture -%}
+                  {%- if setting_link_title_dcase == link_title_dcase -%}
+                    {%- assign has_promo = true -%}
+                    {%- assign promo_block = block -%}
+                  {%- endif -%}
+                {%- endfor -%}
+
+                {% if dropdown_type == 'small' %}
+                  <div class="site-nav__dropdown {% if has_promo %}site-nav__dropdown--with-promo{% endif %} js-mobile-menu-dropdown small-dropdown">
+                    {% if has_promo %}
+                    <div class="grid site-nav__promo-container">
+                      <div class="grid__item one-half">
+                    {% endif %}
+
+                    <ul class="small-dropdown__container">
+                      {% for childlink in link.links %}
+                        <li class="small-dropdown__item {% if childlink.active %}site-nav--active{% endif %}">
+                          {% if childlink.links != blank %}
+                            <a href="{{ childlink.url }}" class="site-nav__link site-nav__dropdown-heading">{{ childlink.title }}</a>
+                            <div class="site-nav__submenu">
+                              <ul class="site-nav__submenu-container">
+                                {% for sublink in childlink.links %}
+                                  {% assign count_links = count_links | plus: 1 %}
+                                  <li class="small-dropdown__subitem">
+                                    <a href="{{ sublink.url }}" class="site-nav__link site-nav__dropdown-link">{{ sublink.title }}</a>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+                          {% else %}
+                            <a href="{{ childlink.url }}" class="site-nav__link site-nav__dropdown-link">{{ childlink.title }}</a>
+                          {% endif %}
+                        </li>
+                      {% endfor %}
+                    </ul>
+
+                      {% if has_promo %}
+                          </div>
+                          <div class="grid__item one-half text-center site-nav__promo">
+                            <div class="global-border-radius site-nav__promo-image">
+                              {%- if promo_block.settings.link_url != blank -%}
+                                <a href="{{ promo_block.settings.link_url }}">
+                              {%- endif -%}
+                              {%- if promo_block.settings.image != blank -%}
+                                {%- render 'responsive-image', image: promo_block.settings.image -%}
+                              {%- else -%}
+                                {{- 'image' | placeholder_svg_tag: 'placeholder-svg' -}}
+                              {%- endif -%}
+                              {%- if promo_block.settings.link_url != blank -%}
+                                </a>
+                              {%- endif -%}
+                            </div>
+                            <div class="site-nav__dropdown-heading">{{ promo_block.settings.text }}</div>
+                            {%- if promo_block.settings.link_text != blank -%}
+                              <a href="{{ promo_block.settings.link_url }}">{{ promo_block.settings.link_text }}</a>
+                            {%- endif -%}
+                          </div>
+                        </div>
+                      {% endif %}
+                  </div>
+                {% else %}
+                  <div class="site-nav__dropdown js-mobile-menu-dropdown mega-dropdown container">
+                    <div class="page-width">
+                      {% if has_promo %}
+                      <div class="grid site-nav__promo-container">
+                        <div class="grid__item three-quarters">
+                      {% endif %}
+
+                      <ul class="mega-dropdown__container grid grid--uniform">
+                        {% for childlink in link.links %}
+                          <li class="mega-dropdown__item grid__item {% if has_promo %}one-third{% else %}one-quarter{% endif %} {% if childlink.active %}site-nav--active{% endif %}">
+                            <a href="{{ childlink.url }}" class="site-nav__link site-nav__dropdown-heading">{{ childlink.title }}</a>
+                            <div class="site-nav__submenu">
+                              <ul class="site-nav__submenu-container">
+                                {% for sublink in childlink.links %}
+                                  {% assign count_links = count_links | plus: 1 %}
+                                  <li class="mega-dropdown__subitem">
+                                    <a href="{{ sublink.url }}" class="site-nav__link site-nav__dropdown-link">{{ sublink.title }}</a>
+                                  </li>
+                                {% endfor %}
+                              </ul>
+                            </div>
+                          </li>
+                        {% endfor %}
+                      </ul>
+
+                      {% if has_promo %}
+                          </div>
+                          <div class="grid__item one-quarter text-center site-nav__promo">
+                            <div class="global-border-radius site-nav__promo-image">
+                              {%- if promo_block.settings.link_url != blank -%}
+                                <a href="{{ promo_block.settings.link_url }}">
+                              {%- endif -%}
+                              {%- if promo_block.settings.image != blank -%}
+                                {%- render 'responsive-image', image: promo_block.settings.image -%}
+                              {%- else -%}
+                                {{- 'image' | placeholder_svg_tag: 'placeholder-svg' -}}
+                              {%- endif -%}
+                              {%- if promo_block.settings.link_url != blank -%}
+                                </a>
+                              {%- endif -%}
+                            </div>
+                            <div class="site-nav__dropdown-heading">{{ promo_block.settings.text }}</div>
+                            {%- if promo_block.settings.link_text != blank -%}
+                              <a href="{{ promo_block.settings.link_url }}">{{ promo_block.settings.link_text }}</a>
+                            {%- endif -%}
+                          </div>
+                        </div>
+                      {% endif %}
+
+                    </div>
+                  </div>
+                {% endif %}
+              </li>
+            {% else %}
+              <li class="site-nav__item {% if link.active %}site-nav--active{% endif %}">
+                <a href="{{ link.url }}" class="site-nav__link">{{ link.title }}</a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          <li class="site-nav__item site-nav__more-links more-links site-nav__invisible site-nav__item--has-dropdown">
+            <a href="#" class="site-nav__link" aria-haspopup="true" aria-expanded="false">
+              {{ 'layout.navigation.more_links' | t }}
+              <span class="feather-icon site-nav__icon">{% render 'svg-chevron-down' %}</span>
+            </a>
+            <div class="site-nav__dropdown small-dropdown more-links-dropdown">
+              <div class="page-width relative">
+                <ul class="small-dropdown__container"></ul>
+                <div class="more-links__dropdown-container"></div>
+              </div>
+            </div>
+          </li>
+        </ul>
+
+        {% if section.settings.dock_nav %}
+          <div class="docking-header__utils utils">
+            <!-- DOCKED NAV SEARCH LEFT LAYOUT -->
+            <div class="docking-header__left-layout-search">
+              <a href="{{ routes.search_url }}" class="plain-link utils__item hide-for-search js-search-form-open" aria-label="{{ 'general.accessibility_labels.search' | t | escape }}">
+                <span class="feather-icon icon--header">
+                  {% render 'feather-search' %}
+                </span>
+                <span class="icon-fallback-text">{{ 'general.search.submit' | t }}</span>
+              </a>
+            </div>
+
+            {% capture search_bar_class %}settings-closed-bar{% endcapture %}
+
+            {% render 'search-bar', settings_class: search_bar_class, force_hidden: true, search_id: 'closed-docked-search' %}
+
+            <!-- DOCKED ACCOUNT -->
+            {% if shop.customer_accounts_enabled %}
+              {{ account_html }}
+            {% endif %}
+
+            <!-- DOCKED NAV CART -->
+            {{ cart_html }}
+          </div>
+        {% endif %}
+      </nav>
+    </section>
+    <!-- MOBILE OPEN SEARCH -->
+    {% if section.settings.show_search_bar_mobile %}
+      {% capture search_bar_class %}search-bar--open search-bar--open-mobile{% endcapture %}
+
+      {% render 'search-bar-mobile', settings_class: search_bar_class, search_id: 'open-search-mobile-bar' %}
+    {% endif %}
+
+    {% assign message_count = 0 %}
+    {% if section.settings.message_1_text != blank %}{% assign message_count = message_count | plus: 1 %}{% endif %}
+    {% if section.settings.message_2_text != blank %}{% assign message_count = message_count | plus: 1 %}{% endif %}
+    {% if section.settings.message_3_text != blank %}{% assign message_count = message_count | plus: 1 %}{% endif %}
+
+    {% if section.settings.show_messages and message_count > 0 %}
+      {% if section.settings.home_only_messages == false or template == 'index' %}
+        <section class="store-messages-bar container">
+          <div class="page-width store-messages {% if section.settings.slideshow_messages and message_count > 1 %}js-messages-slider{% elsif message_count > 1 %}js-mobile-messages-slider{% endif %}">
+            {% for i in (1..3) %}
+              {% capture text_key %}message_{{ i }}_text{% endcapture %}
+              {% capture url_key %}message_{{ i }}_url{% endcapture %}
+              {% if section.settings[text_key] != blank %}
+                <div class="store-message {% unless section.settings.slideshow_messages %}store-message--static{% endunless %}">
+                  {% if section.settings[url_key] %}
+                    <a class="store-message-link" href="{{ section.settings[url_key] }}">
+                  {% endif %}
+                  {{ section.settings[text_key] }}
+                  {% if section.settings[url_key] != blank %}
+                    </a>
+                  {% endif %}
+                </div>
+              {% endif %}
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    {% endif %}
+
+    {% if section.settings.dock_nav %}
+    </div>
+    </div>
+    {% endif %}
+  </div>
+{%- endif -%}
+
+
+{% schema %}
+  {
+    "name": "Header",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Logo"
+      },
+      {
+        "type": "image_picker",
+        "id": "logo",
+        "label": "Image"
+      },
+      {
+        "type": "range",
+        "id": "logo_width",
+        "min": 30,
+        "max": 450,
+        "step": 5,
+        "unit": "px",
+        "label": "Maximum width",
+        "default": 200
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "radio",
+        "id": "desktop_layout",
+        "label": "Desktop alignment",
+        "options": [
+          { "value": "left", "label": "Left" },
+          { "value": "center", "label": "Center" }
+        ],
+        "default": "left"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_search_bar_desktop",
+        "label": "Show open search bar on desktop",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "show_search_bar_mobile",
+        "label": "Show open search bar on mobile",
+        "default": false
+      },
+      {
+        "type": "radio",
+        "id": "logo_position_mobile",
+        "label": "Mobile logo position",
+        "options": [
+          { "value": "inline", "label": "Inline - left aligned between the icons" },
+          { "value": "own_row", "label": "Own row - centered above the icons" }
+        ],
+        "default": "own_row"
+      },
+      {
+        "type": "checkbox",
+        "id": "dock_nav",
+        "label": "Enable sticky header",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Announcement bar"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_announcement_bar",
+        "label": "Show announcement bar",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "home_only_announcement_bar",
+        "label": "Show only on the home page",
+        "default": false
+      },
+      {
+         "type": "text",
+         "id": "announcement_bar_text",
+         "label": "Text",
+         "default": "Add notices for your shoppers here"
+      },
+      {
+         "type": "url",
+         "id": "announcement_bar_url",
+         "label": "Link"
+      },
+      {
+        "type": "header",
+        "content": "Navigation"
+      },
+      {
+        "type": "link_list",
+        "id": "main_linklist",
+        "label": "Menu",
+        "default": "main-menu"
+      },
+      {
+        "type": "header",
+        "content": "Language Selector",
+        "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_locale_selector",
+        "label": "Show language selector",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Currency Selector",
+        "info": "To add a currency, go to your [payment settings.](/admin/settings/payments)"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_currency_selector",
+        "label": "Show currency selector",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Store messages"
+      },
+      {
+        "type": "paragraph",
+        "content": "These are displayed under the main menu, great for promotions and notices"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_messages",
+        "label": "Show store messages",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "home_only_messages",
+        "label": "Show only on the home page",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "slideshow_messages",
+        "label": "Enable carousel on large screens",
+        "default": false,
+        "info": "The messages will always be in a carousel on small screens"
+      },
+      {
+        "type": "text",
+        "id": "message_1_text",
+        "label": "Message 1 text"
+      },
+      {
+        "type": "url",
+        "id": "message_1_url",
+        "label": "Message 1 link"
+      },
+      {
+        "type": "text",
+        "id": "message_2_text",
+        "label": "Message 2 text"
+      },
+      {
+        "type": "url",
+        "id": "message_2_url",
+        "label": "Message 2 link"
+      },
+      {
+        "type": "text",
+        "id": "message_3_text",
+        "label": "Message 3 text"
+      },
+      {
+        "type": "url",
+        "id": "message_3_url",
+        "label": "Message 3 link"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "menu_promo",
+        "name": "Menu promotion",
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Promotions are shown in a selected dropdown menu. They are not visible in the mobile menu. [Learn more](https://cleancanvas.co.uk/support/boost/menu-images)"
+          },
+          {
+            "type": "text",
+            "id": "dropdown_link_title",
+            "label": "Dropdown link name",
+            "info": "The promotion will show inside this dropdown menu"
+          },
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "text",
+            "id": "text",
+            "label": "Text"
+          },
+          {
+            "type": "text",
+            "id": "link_text",
+            "label": "Link text"
+          },
+          {
+            "type": "url",
+            "id": "link_url",
+            "label": "Link URL"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

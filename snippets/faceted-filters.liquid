@@ -1,0 +1,391 @@
+{% comment %}
+  Settings:
+  - show_filters
+  - show_sort_by
+  - show_featured
+  - show_prod_totals
+  - show_filter_prod_counts
+  - swatch_enabled
+  - swatch_option_name
+  - swatch_method
+
+  Parameters:
+  - paginate {Object} [required] - The pagination object
+  - close_icon {string} [optional] - Markup to use for the close buttons (mobile)
+  - back_icon {string} [optional] - Markup to use for the back buttons (mobile)
+
+  Example usage:
+  {%- capture close_icon -%}{% render 'svg-x' %}{%- endcapture -%}
+  {%- capture back_icon -%}{% render 'svg-chevron-left' %}{%- endcapture -%}
+  {% render 'faceted-filters',
+    paginate: paginate,
+    close_icon: close_icon,
+    back_icon: back_icon
+  %}
+{% endcomment %}
+
+{%- liquid
+  assign current_sort_by = collection.sort_by | default: collection.default_sort_by
+  assign show_filters = section.settings.show_filters
+  assign show_sort_by = section.settings.show_sort_by
+
+  if show_filters
+    assign active_filters_count = 0
+
+    for filter in collection.filters
+      if filter.type == 'price_range'
+        if filter.min_value.value
+          assign active_filters_count = active_filters_count | plus: 1
+        endif
+        if filter.max_value.value
+          assign active_filters_count = active_filters_count | plus: 1
+        endif
+      else
+        assign active_filters_count = active_filters_count | plus: filter.active_values.size
+      endif
+    endfor
+  endif
+-%}
+
+{%- unless close_icon -%}
+  {%- capture close_icon -%}{% render 'feather-x' %}{%- endcapture -%}
+{%- endunless -%}
+
+{%- if show_filters -%}
+  {%- unless back_icon -%}
+    {%- capture back_icon -%}{% render 'feather-chevron-left' %}{%- endcapture -%}
+  {%- endunless -%}
+
+  {%- capture clear_filters_url -%}{{ collection.url }}?sort_by={{ current_sort_by }}{%- endcapture -%}
+{%- endif -%}
+
+<form class="cc-faceted-filters" id="filters" data-filtering="{{ show_filters }}" data-sorting="{{ show_sort_by }}" novalidate>
+  {%- if collection.current_vendor or collection.current_type -%}
+    {%- capture clear_filters_url -%}{{ collection.url }}&sort_by={{ current_sort_by }}{%- endcapture -%}
+    <input type="hidden" name="q" value="{{ collection.current_vendor }}{{ collection.current_type }}">
+  {%- endif -%}
+
+  <div class="cc-filters-control md-up-hidden no-js-hidden">
+    {%- if show_filters -%}
+      <button type="button" class="cc-filters-control__btn{% if active_filters_count > 0 %} has-active-filters{% endif %} js-show-filters">
+        {{ 'collections.filtering.filter' | t }}
+        {% if active_filters_count > 0 %}({{ active_filters_count }}){% endif %}
+      </button>
+    {%- endif -%}
+
+    {%- if show_sort_by -%}
+      <button type="button" class="cc-filters-control__btn{% if collection.sort_by != blank and collection.sort_by != collection.default_sort_by %} has-active-filters{% endif %} js-show-sort">
+        {{- 'collections.sorting.sort_button' | t -}}
+      </button>
+    {%- endif -%}
+  </div>
+
+  <div class="cc-filters-container">
+    {%- if show_filters -%}
+      <div class="cc-filters">
+        <div class="cc-filters__header md-up-hidden">
+          <div class="cc-filter-heading">
+            {{- 'collections.general.filter_by' | t -}}
+          </div>
+          <a href="{{ clear_filters_url }}" class="cc-filter-clear-btn js-clear-filters"{% if active_filters_count == 0 %} hidden{% endif %}>
+            {{- 'collections.filtering.clear' | t -}}
+          </a>
+          <button type="button" class="cc-filter-close-btn feather-icon js-close-filters" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+            {{- close_icon -}}
+          </button>
+        </div>
+
+        <div class="cc-filters__items">                    
+          {%- for filter in collection.filters -%}
+            {%- liquid
+              assign swatches = false
+              assign has_active_filters = false
+              assign active_count = filter.active_values.size
+
+              if filter.type == 'price_range'
+                if filter.min_value.value
+                  assign has_active_filters = true
+                  assign active_count = active_count | plus: 1
+                endif
+                if filter.max_value.value
+                  assign has_active_filters = true
+                  assign active_count = active_count | plus: 1
+                endif
+              else
+                if active_count > 0
+                  assign has_active_filters = true
+                endif
+              endif
+            -%}
+            
+            {%- if settings.swatch_enabled and filter.label == settings.swatch_option_name -%}
+              {%- assign swatches = true -%}
+              <style>
+                {%- if settings.swatch_method == 'images' -%}
+                  {%- for value in filter.values -%}
+                    {%- assign swatch_value = value.label | handle -%}
+                    [data-swatch="{{ swatch_value }}"] .swatch-sample {
+                      background-image: url({{ swatch_value | append: '.png' | file_img_url: '40x40', crop: 'center' }});
+                    }
+                  {%- endfor -%}
+                {%- else -%}
+                  {%- for value in filter.values -%}
+                    {%- assign swatch_value = value.label | handle -%}
+                    [data-swatch="{{ swatch_value }}"] .swatch-sample {
+                      background-color: {{ swatch_value | remove: '-' }};
+                    }
+                  {%- endfor -%}
+                {%- endif -%}
+              </style>
+            {%- endif -%}
+
+            <details class="cc-filter" data-type="{{ filter.type }}" data-index="{{ forloop.index }}">
+              <summary class="cc-filter__toggle{% if has_active_filters %} has-active-filters{% endif %}">
+                {{ filter.label | escape }}
+                {% if has_active_filters %}({{ active_count }}){% endif %}
+              </summary>
+              <div class="cc-filter__panel">
+                <div class="cc-filter__header">
+                  <div class="cc-filter-heading md-up-hidden">
+                    {{- filter.label | escape -}}
+                  </div>
+                  <div class="md-down-hidden">
+                    {{- 'collections.filtering.results_count' | t: count: paginate.items -}}
+                  </div>
+                  <a href="{{ filter.url_to_remove }}" class="cc-filter-clear-btn"{% if has_active_filters == false %} hidden{% endif %}>
+                    {{- 'collections.filtering.clear' | t -}} 
+                  </a>
+                  <button type="button" class="cc-filter-back-btn feather-icon md-up-hidden" aria-label="{{ 'layout.navigation.back' | t | escape }}">
+                    {{- back_icon -}}
+                  </button>
+                </div>
+
+                <div class="cc-filter__content">
+                  {%- case filter.type -%}
+                    {%- when 'list' -%}
+                      <ul {% if swatches %}class="cc-filter__swatches"{% endif %}>
+                        {%- for value in filter.values -%}
+                          <li>
+                            <input type="checkbox"
+                                    class="{% if swatches %}swatch-input{% else %}checkbox{% endif %}"
+                                    id="cc-filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                                    name="{{ value.param_name }}"
+                                    value="{{ value.value | escape }}"
+                                    {% if value.active %}checked{% endif %}
+                                    {% if value.count == 0 and value.active == false %}disabled{% endif %}>
+                            <label for="cc-filter-{{ filter.label | escape }}-{{ forloop.index }}"
+                                    {% if swatches %} class="swatch-label{% if value.count == 0 and value.active == false %} unavailable{% endif %}" data-swatch="{{ value.label | handle }}"{% endif %}>
+                              {% if swatches %}<span class="swatch-sample"></span>{% endif %}
+                              <span class="cc-filter-label">{{ value.label | escape }}</span>
+                              {% if section.settings.show_filter_prod_counts -%}
+                                <span>{{ value.count }}</span>
+                              {%- endif -%}
+                            </label>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
+
+                    {%- when 'price_range' -%}
+                      {%- liquid
+                        assign currencies_using_comma_decimals = "ANG,ARS,BRL,BYN,BYR,CLF,CLP,COP,CRC,CZK,DKK,EUR,HRK,HUF,IDR,ISK,MZN,NOK,PLN,RON,RUB,SEK,TRY,UYU,VES,VND" | split: ','
+                        assign uses_comma_decimals = false
+                        if currencies_using_comma_decimals contains cart.currency.iso_code
+                          assign uses_comma_decimals = true
+                        endif
+                      -%}
+                      <div class="cc-price-range">
+                        <div class="cc-price-range__inputs">
+                          <div class="cc-price-range__input-container">
+                            <span class="cc-price-range__input-currency">{{ cart.currency.symbol }}</span>
+                            <input class="cc-price-range__input cc-price-range__input--min"
+                              id="CCPriceRangeMin"
+                              name="{{ filter.min_value.param_name }}"
+                              {%- if filter.min_value.value -%}
+                                {%- if uses_comma_decimals -%}
+                                  value="{{ filter.min_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                                {%- else -%}
+                                  value="{{ filter.min_value.value | money_without_currency | replace: ',', '' | round }}"
+                                {%- endif -%}
+                              {% endif %}
+                              type="number"
+                              step="10"
+                              placeholder="0"
+                              min="0"
+                              {%- if uses_comma_decimals -%}
+                                max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                              {%- else -%}
+                                max="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                              {% endif %}
+                              aria-label="{{ 'collections.price_range.min_label' | t | escape }}">
+                          </div>
+                          <span class="cc-price-range__input-separator">–</span>
+                          <div class="cc-price-range__input-container">
+                            <span class="cc-price-range__input-currency">{{ cart.currency.symbol }}</span>
+                            <input class="cc-price-range__input cc-price-range__input--max"
+                              id="CCPriceRangeMax"
+                              name="{{ filter.max_value.param_name }}"
+                              {%- if filter.max_value.value -%}
+                                {%- if uses_comma_decimals -%}
+                                  value="{{ filter.max_value.value | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                                {%- else -%}
+                                  value="{{ filter.max_value.value | money_without_currency | replace: ',', '' | round }}"
+                                {% endif %}
+                              {%- endif -%}
+                              {%- if uses_comma_decimals -%}
+                                placeholder="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                              {%- else -%}
+                                placeholder="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                              {% endif %}
+                              type="number"
+                              step="10"
+                              min="0"
+                              {%- if uses_comma_decimals -%}
+                                max="{{ filter.range_max | money_without_currency | replace: '.', '' | replace: ',', '.' | round }}"
+                              {%- else -%}
+                                max="{{ filter.range_max | money_without_currency | replace: ',', '' | round }}"
+                              {% endif %}
+                              aria-label="{{ 'collections.price_range.max_label' | t | escape }}">
+                          </div>
+                        </div>
+
+                        <div class="cc-price-range__bar no-js-hidden">
+                          <div class="cc-price-range__bar-inactive"></div>
+                          <div class="cc-price-range__bar-active"></div>
+                          <div class="cc-price-range__control cc-price-range__control--min"></div>
+                          <div class="cc-price-range__control cc-price-range__control--max"></div>
+                        </div>
+                      </div>
+                    
+                  {%- endcase -%}
+                </div>
+              </div>
+            </details>
+          {%- endfor -%}
+        </div>
+
+        {%- liquid
+          if section.settings.show_prod_totals
+            assign submit_label = 'collections.filtering.results_count' | t: count: paginate.items
+          else
+            assign submit_label = 'collections.filtering.apply' | t
+          endif
+        -%}
+
+        <div class="cc-filters__footer md-up-hidden{% if active_filters_count == 0 %} is-hidden{% endif %}">
+          <button type="button" class="btn js-close-filters">
+            {{- 'collections.filtering.results_count' | t: count: paginate.items -}}
+          </button>
+        </div>
+      </div>
+    {%- endif -%}
+
+    {%- if show_sort_by -%}
+      {%- capture values -%}
+        {{- 'best-selling' -}}|
+        {{- 'title-ascending' -}}|
+        {{- 'title-descending' -}}|
+        {{- 'price-ascending' -}}|
+        {{- 'price-descending' -}}|
+        {{- 'created-descending' -}}|
+        {{- 'created-ascending' -}}
+      {%- endcapture -%}
+
+      {%- capture names -%}
+        {{- 'collections.sorting.best_selling' | t -}}|
+        {{- 'collections.sorting.az' | t -}}|
+        {{- 'collections.sorting.za' | t -}}|
+        {{- 'collections.sorting.price_ascending' | t -}}|
+        {{- 'collections.sorting.price_descending' | t -}}|
+        {{- 'collections.sorting.date_descending' | t -}}|
+        {{- 'collections.sorting.date_ascending' | t -}}
+      {%- endcapture -%}
+
+      {%- liquid
+        assign featured = 'collections.sorting.featured' | t
+        assign sort_by_label = 'collections.sorting.title' | t
+
+        if section.settings.show_featured or current_sort_by == 'manual'
+          assign values = values | prepend: 'manual|'
+          assign names = names | prepend: '|' | prepend: featured
+        endif
+
+        assign sort_by_values = values | split: '|'
+        assign sort_by_names = names | split: '|'
+        
+        for sort_option_value in sort_by_values
+          if sort_option_value == current_sort_by
+            assign selected_sort_option_name = sort_by_names[forloop.index0]
+          endif
+        endfor
+      -%}
+      <details class="cc-filter cc-filter--sort" data-index="0">
+        <summary class="cc-filter__toggle">
+          <span class="cc-sort-label md-down-hidden">{{- 'collections.sorting.title' | t -}}</span>
+          <span class="cc-sort-selected md-down-hidden">{{ selected_sort_option_name }}</span>
+        </summary>
+        <div class="cc-filter__panel">
+          <div class="cc-filter__header md-up-hidden">
+            <div class="cc-filter-heading">
+              {{- 'collections.sorting.title' | t -}}
+            </div>
+            <button type="button" class="cc-filter-close-btn feather-icon js-close-filters" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+              {{- close_icon -}}
+            </button>
+          </div>
+
+          <div class="cc-filter__content">
+            <ul>
+              {%- for sort_option_name in sort_by_names -%}
+                {%- assign sort_option_value = sort_by_values[forloop.index0] -%}
+                <li>
+                  <input type="radio" class="radio" id="sort-by-{{ forloop.index }}" name="sort_by" value="{{ sort_option_value }}"{% if sort_option_value == current_sort_by %} checked{% endif %}>
+                  <label for="sort-by-{{ forloop.index }}">{{ sort_option_name }}</label>
+                </li>
+              {%- endfor -%}
+            </ul>
+          </div>
+
+          <div class="cc-filter__footer md-up-hidden">
+            <button type="button" class="btn js-close-filters">
+              {{- 'collections.filtering.apply' | t -}}
+            </button>
+          </div>
+        </div>
+      </details>
+    {%- endif -%}
+
+    <noscript class="no-js-apply-filters">
+      <button type="submit">{{- 'collections.filtering.apply' | t }}</button>
+    </noscript>
+  </div>
+
+  {%- if show_filters -%}
+    <div class="cc-active-filters"{% if active_filters_count == 0 %} hidden{% endif %}>
+      <div class="cc-active-filters__scroller">
+        <div class="cc-active-filters__items">
+          <a href="{{ clear_filters_url }}" class="cc-active-filter-reset">
+            {{- 'collections.filtering.clear_all' | t -}}
+          </a>
+
+          {%- for filter in collection.filters -%}
+            {%- for value in filter.active_values -%}
+              <a href="{{ value.url_to_remove }}" class="cc-active-filter">
+                {{ value.label | escape }} {{ close_icon }}
+              </a>
+            {%- endfor -%}
+
+            {% if filter.type == "price_range" %}
+              {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                <a href="{{ filter.url_to_remove }}" class="cc-active-filter">
+                  {%- if filter.min_value.value %}{{ filter.min_value.value | money }}{% else %}{{ 0 | money }}{% endif %} -
+                  {% if filter.max_value.value %}{{ filter.max_value.value | money }}{% else %}{{ filter.range_max | money }}{% endif -%}
+                  {{ close_icon }}
+                </a>
+              {%- endif -%}
+            {% endif %}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  {%- endif -%}
+</form>

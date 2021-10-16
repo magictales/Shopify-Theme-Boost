@@ -1,0 +1,183 @@
+{%- assign pick_up_availabilities = product_variant.store_availabilities | where: 'pick_up_enabled', true -%}
+
+{%- if pick_up_availabilities.size > 0 -%}
+  <div class="store-availability-container"
+    data-section-id="{{ section.id }}"
+    data-section-type="store-availability">
+
+    <div class="store-availability-information">
+      {%- assign closest_location = pick_up_availabilities.first -%}
+
+        <div class="store-availability-icon {% if closest_location.available %}store-availability-icon--available{% else %}store-availability-icon--unavailable{% endif %}">
+          {% if closest_location.available %}
+            {% render 'svg-pickup-available' %}
+          {% else %}
+            {% render 'svg-pickup-unavailable' %}
+          {% endif %}
+        </div>
+
+        <div class="store-availability-information-container">
+          {%- if closest_location.available -%}
+            <p class="store-availability-information__title">
+              {{ 'store_availability.general.pick_up_available_at_html' | t: location_name: closest_location.location.name }}
+            </p>
+            <p class="store-availability-information__stock store-availability-small-text">
+              <small>{{ closest_location.pick_up_time }}</small>
+            </p>
+            <p class="store-availability-information__stores rte">
+              <a href="#" class="store-availability-information__link store-availability-small-text" data-store-availability-modal-open aria-haspopup="dialog">
+                <small>
+                  {%- if pick_up_availabilities.size == 1 -%}
+                    {{ 'store_availability.general.view_store_info' | t }}
+                  {%- else -%}
+                    {{ 'store_availability.general.check_other_stores' | t }}
+                  {%- endif -%}
+                </small>
+              </a>
+            </p>
+          {%- else -%}
+            <p class="store-availability-information__title">
+              {{ 'store_availability.general.pick_up_unavailable_at_html' | t: location_name: closest_location.location.name }}
+            </p>
+            {%- if pick_up_availabilities.size > 1 -%}
+              <p class="store-availability-information__stores rte">
+                <a href="#" class="store-availability-information__link store-availability-small-text"
+                   data-store-availability-modal-open aria-haspopup="dialog">
+                  <small>
+                    {{ 'store_availability.general.check_other_stores' | t }}
+                  </small>
+                </a>
+              </p>
+            {%- endif -%}
+          {%- endif -%}
+        </div>
+    </div>
+
+    <div class="store-availabilities-modal cc-popup cc-popup--right" aria-hidden="true" data-freeze-scroll="true">
+      <div class="cc-popup-background"></div>
+      <div class="cc-popup-modal"
+           role="dialog"
+           aria-modal="true"
+           aria-labelledby="store-availabilities-modal__product-title">
+        <button type="button" class="cc-popup-close" aria-label="{{ 'general.accessibility_labels.close' | t | escape }}">
+          {% render 'popup-close' %}
+        </button>
+
+        <div class="cc-popup-container">
+          <div class="cc-popup-content">
+            <div class="cc-popup-text">
+              <h2 class="store-availabilities-modal__product-title"
+                  id="store-availabilities-modal__product-title"
+                  data-store-availability-modal-product-title>
+              </h2>
+              <small class="store-availabilities-modal__variant-title store-availability-small-text">
+                {{ product_variant.title }}
+              </small>
+            </div>
+
+            {%- assign closest_location_country_code = pick_up_availabilities.first.location.address.country_code -%}
+            {%- assign imperialSystemCountries = 'US,MM,LR'  | split: ',' -%}
+            {%- if imperialSystemCountries contains closest_location_country_code -%}
+              {%- assign unit_system = 'imperial' -%}
+            {%- else -%}
+              {%- assign unit_system = 'metric' -%}
+            {%- endif -%}
+
+            <div class="store-availabilities-list" data-unit-system="{{ unit_system }}" role="list">
+              {%- for availability in pick_up_availabilities -%}
+                <div class="store-availability-list__item">
+                  <div class="store-availability-list__location">
+                    <div class="store-availability-list__location__text">
+                      <strong>
+                        {{availability.location.name}}
+                      </strong>
+                    </div>
+
+                    {% if availability.location.latitude and availability.location.longitude %}
+                      <a href="https://www.google.com/maps/search/?api=1&query={{ availability.location.latitude }},{{ availability.location.longitude }}"
+                         target="_blank"
+                         rel="noopener"
+                         class="store-availability-list__location__distance store-availability-small-text">
+                    {% else %}
+                      <span class="store-availability-list__location__distance store-availability-small-text">
+                    {% endif %}
+                      {%- render 'svg-map-marker' -%}
+                      <small
+                        data-distance="false"
+                        data-latitude="{{ availability.location.latitude }}"
+                        data-longitude="{{ availability.location.longitude }}">
+                      </small>
+
+                      <small data-distance-unit>
+                        {%- if unit_system == 'imperial' -%}
+                          {{- 'store_availability.general.miles' | t -}}
+                        {%- else -%}
+                          {{- 'store_availability.general.kilometers' | t -}}
+                        {%- endif -%}
+                      </small>
+
+                    {% if availability.location.latitude and availability.location.longitude %}
+                      </a>
+                    {% else %}
+                      </span>
+                    {% endif %}
+                  </div>
+                  <div class="store-availability-list__stock store-availability-small-text">
+                    <div class="{% if availability.available %}cc-icon-available{% else %}cc-icon-unavailable{% endif %}">
+                      {% if availability.available %}
+                        {% render 'svg-pickup-available' %}
+                      {% else %}
+                        {% render 'svg-pickup-unavailable' %}
+                      {% endif %}
+                    </div>
+
+                    <small>
+                      {%- if availability.available -%}
+                         {{ 'store_availability.general.pick_up_available' | t }}, {{ availability.pick_up_time | downcase }}
+                      {%- else -%}
+                        {{ 'store_availability.general.pick_up_currently_unavailable' | t }}
+                      {%- endif -%}
+                    </small>
+                  </div>
+                  {%- assign address = availability.location.address -%}
+
+                  <address class="store-availability-list__address">
+                    {{ address | format_address }}
+                  </address>
+
+                  {%- if address.phone.size > 0 -%}
+                    <p class="store-availability-list__phone store-availability-list__phone--mobile">
+                      <a href="tel:{{ address.phone }}">{{ address.phone }}</a><br>
+                    </p>
+
+                    <p class="store-availability-list__phone store-availability-list__phone--desktop">
+                      {{ address.phone }}<br>
+                    </p>
+                  {%- endif -%}
+
+                  {% if availability.location.latitude == nil or availability.location.longitude == nil %}
+                    <p class="store-availability-list__invalid_address store-availability-small-text">
+                      {% render 'svg-pickup-warning' %}
+                      <small>
+                        {{ 'store_availability.general.invalid_location_address' | t }}
+                      </small>
+                    </p>
+                  {% endif %}
+                </div>
+              {%- endfor -%}
+            </div>
+          </div>
+        </div>
+      </div>
+  	</div>
+  </div>
+{%- else -%}
+  <!--NO_PICKUP-->
+{%- endif -%}
+
+{% schema %}
+{
+  "name": {},
+  "settings": []
+}
+{% endschema %}

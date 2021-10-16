@@ -1,0 +1,215 @@
+<div id="section-id-{{ section.id }}" class="large-row container container--no-mobile-padding section-{{ section.id }}" data-section-id="{{ section.id }}"  data-section-type="video">
+  {% style %}
+    .section-{{ section.id }} .video-container__play.feather-icon svg {
+      stroke: {{ section.settings.color_overlay_text }};
+    }
+
+    .section-{{ section.id }} .overlay {
+      top: {{ section.settings.overlay_position_y }}%;
+      left: {{ section.settings.overlay_position_x }}%;
+    }
+  {% endstyle %}
+
+  <div class="page-width relative">
+
+    {% if section.settings.video_url != blank %}
+      <div class="video-container global-border-radius global-border-radius--not-extra-small video-container--image video-container--modal-mobile avoid-overlaps"
+        data-video-id="{{ section.settings.video_url.id }}"
+        data-video-url="{{ section.settings.video_url.url }}"
+        data-video-type="{{ section.settings.video_url.type }}"
+        data-video-autoplay="false"
+        data-video-loop="false">
+        <div class="avoid-overlaps__mobile-container video-container__player">
+          <a class="video-container__stop" href="#" aria-label="{{ 'general.accessibility_labels.video_stop' | t | escape }}">{% render 'icon-close' %}</a>
+          <div class="video-container__video"></div>
+          <div class="video-container__cover">
+            {%- if section.settings.cover_image == blank -%}
+              <div class="placeholder-image video-container__cover">
+                {{- 'lifestyle-1' | placeholder_svg_tag: 'placeholder-svg' -}}
+              </div>
+            {%- else -%}
+              <div class="rimage-outer-wrapper rimage-background lazyload fade-in"
+                  data-bgset="{% render 'bgset', image: section.settings.cover_image %}"
+                  data-sizes="auto"
+                  data-parent-fit="cover"
+                  style="background-position: {{ section.settings.image_position }}">
+                <noscript>
+                  <div class="rimage-wrapper" style="padding-top:{{ 1 | divided_by: section.settings.cover_image.aspect_ratio | times: 100 }}%">
+                    <img src="{{ section.settings.cover_image | img_url: '1024x1024' }}" alt="{{ section.settings.cover_image.alt | escape }}" class="rimage__image">
+                  </div>
+                </noscript>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        {% render 'image-overlay',
+            background_color: section.settings.color_overlay_bg,
+            background_opacity: section.settings.overlay_opacity,
+            text_color: section.settings.color_overlay_text,
+            title: section.settings.overlay_title,
+            enlarge_title: section.settings.enlarge_title,
+            text: section.settings.overlay_text,
+            enlarge_text: section.settings.enlarge_text,
+            mobile_text_below: section.settings.mobile_text_below,
+            video_button: true,
+            extra_large_text: true %}
+      </div>
+    {% else %}
+      <div class="row-double-space video-section center">{{ 'homepage.onboarding.no_content' | t }}</div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Video",
+    "tag": "section",
+    "class": "section-video",
+    "settings": [
+      {
+        "type": "video_url",
+        "id": "video_url",
+        "label": "Video link",
+        "accept": ["youtube", "vimeo"],
+        "default": "https://www.youtube.com/watch?v=_9VUPq3SxOc"
+      },
+      {
+        "id": "cover_image",
+        "type": "image_picker",
+        "label": "Cover image",
+        "info": "Required. Shows over the video before it's played."
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your image in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 80,
+        "unit": "%",
+        "info": "Does not apply when the overlay is shown under the image on mobile."
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "textarea",
+        "id": "overlay_title",
+        "label": "Heading",
+        "default": "Video"
+      },
+      {
+        "type": "text",
+        "id": "overlay_text",
+        "label": "Text",
+        "default": "Add a video to tell your story"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_x",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      },
+      {
+        "type": "checkbox",
+        "id": "mobile_text_below",
+        "label": "Show overlay below image on mobile",
+        "info": "If not ticked product labels may not show on mobile"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Video",
+        "settings": {
+          "video_url": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc"
+        }
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,318 @@
+<div class="container large-row promotional-images section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="promotional-images">
+  {% style %}
+    {% for block in section.blocks %}
+      {%- assign alpha = block.settings.color_background | color_extract: 'alpha' -%}
+      {%- if alpha > 0 -%}
+        {%- assign setting_bg_opacity = block.settings.overlay_opacity | divided_by: 100.00 -%}
+        {%- assign overlay_background = block.settings.color_background | color_modify: 'alpha', setting_bg_opacity -%}
+      {%- else -%}
+        {%- assign overlay_background = 'transparent' -%}
+      {%- endif -%}
+
+      .section-{{ section.id }} .block-{{ forloop.index }}.image_before .promotional-row__container,
+      .section-{{ section.id }} .block-{{ forloop.index }}.image_after .promotional-row__container {
+        background-color: {{ block.settings.color_background }};
+      }
+
+      .section-{{ section.id }} .block-{{ forloop.index }}.text-over-image .promotional-image,
+      .section-{{ section.id }} .block-{{ forloop.index }} .promotional-row__content {
+        color: {{ block.settings.color_text }};
+        background-color: {{ overlay_background }};
+      }
+    {% endfor %}
+
+    @media only screen and (max-width: 767px) {
+      {% for block in section.blocks %}
+        .section-{{ section.id }} .block-{{ forloop.index }} .promotional-row__content {
+          background-color: {{ block.settings.color_background }};
+        }
+
+        {% if block.settings.layout == 'text_over_image' %}
+          {% assign alpha = block.settings.color_background | color_extract: 'alpha' %}
+          {% if alpha > 0 %}
+            {% assign overlay_background = block.settings.color_background %}
+            {% assign overlay_text = block.settings.color_text %}
+          {% else %}
+            {% assign overlay_background = settings.color_body_background %}
+            {% assign overlay_text = settings.color_body_text %}
+          {% endif %}
+
+          .section-{{ section.id }} .block-{{ forloop.index }} .promotional-row__content {
+            background-color: {{ overlay_background }};
+            color: {{ overlay_text }};
+          }
+        {% endif %}
+      {% endfor %}
+    }
+  {% endstyle %}
+
+  <div class="page-width">
+    <div class="grid flex promotional-row">
+
+      {% if section.blocks.size < 2 %}
+        {% assign block_count = 'single-block' %}
+      {% else %}
+        {% assign block_count = 'double-block' %}
+      {% endif %}
+
+      {% for block in section.blocks %}
+        <div class="grid__item flex one-half small-down--one-whole relative block-{{ forloop.index }} {{ block.settings.layout }} {{ block_count }}" {{ block.shopify_attributes }}>
+
+          {% if block.settings.layout == 'image_before' or block.settings.layout == 'text_over_image' %}
+            <div class="promotional-image {% if block.settings.layout == 'text_over_image' %} mobile-only global-border-radius{% endif %}">
+              {% if block.settings.image_link != blank %}<a href="{{ block.settings.image_link }}">{% endif %}
+              {% if block.settings.image == blank %}
+                {% capture placeholder_type %}product-{{ forloop.index0 | modulo: 6 | plus: 1 }}{% endcapture %}
+                {{ placeholder_type | placeholder_svg_tag: 'placeholder-svg' }}
+              {% else %}
+                {% render 'responsive-image', image: block.settings.image %}
+              {% endif %}
+              {% if block.settings.image_link != blank %}</a>{% endif %}
+            </div>
+          {% endif %}
+
+          {% if block.settings.layout == 'text_over_image' %}
+            <div class="promotional-image promotional-image--desktop global-border-radius">
+              {% if block.settings.image_link != blank %}<a href="{{ block.settings.image_link }}">{% endif %}
+              {% if block.settings.image == blank %}
+                {% capture placeholder_type %}product-{{ forloop.index0 | modulo: 6 | plus: 1 }}{% endcapture %}
+                {{ placeholder_type | placeholder_svg_tag: 'placeholder-svg' }}
+              {% else %}
+                <div class="rimage-background fade-in lazyload"
+                     data-bgset="{% render 'bgset', image: block.settings.image %}"
+                     data-sizes="auto"
+                     data-parent-fit="cover"
+                     style="background-position: {{ block.settings.image_position }}">
+                  <noscript>
+                    <img src="{{ block.settings.image | img_url: '1024x1024' }}" alt="{{ block.settings.image.alt | escape }}" class="rimage-background__image">
+                  </noscript>
+                </div>
+              {% endif %}
+              {% if block.settings.image_link != blank %}</a>{% endif %}
+            </div>
+          {% endif %}
+
+          {% if block.settings.offer != blank or block.settings.title != blank or block.settings.url != blank %}
+          <div class="promotional-row__container global-border-radius {% if block.settings.layout != 'text_over_image' %} relative{% endif %}">
+            <div class="promotional-row__content global-border-radius center {% if alpha == 0 %}promotional-row__content--transparent-bg{% endif %}">
+              {% if block.settings.title != blank %}
+                <div class="promotional-row__text rte {% if block.settings.enlarge_text%} large-text{% endif %}">{{ block.settings.title }}</div>
+              {% endif %}
+              {% if block.settings.offer != blank %}
+                <h2 class="promotional-row__title {% if block.settings.enlarge_title %} massive-title{% else %} giant-title{% endif %}">{{ block.settings.offer }}</h2>
+              {% endif %}
+
+              {% assign alpha = block.settings.color_background | color_extract: 'alpha' %}
+              {%- assign link_inherit_color = false -%}
+              {%- if block.settings.url_style == 'link_style' -%}
+                {% if block.settings.layout == 'text_over_image' %}
+                  {%- if alpha == 0 or block.settings.color_background != settings.color_body_background -%}
+                    {%- assign link_inherit_color = true -%}
+                  {%- endif -%}
+                {% else %}
+                  {%- if alpha > 0 and block.settings.color_background != settings.color_body_background -%}
+                    {%- assign link_inherit_color = true -%}
+                  {%- endif -%}
+                {% endif %}
+              {%- endif -%}
+
+              {% if block.settings.url_text != blank %}
+                <a href="{{ block.settings.url }}" class="promotional-row__content--link {% if block.settings.url_style == 'button_1' %}btn--small btn btn--primary{% elsif block.settings.url_style == 'button_2' %}btn--small btn btn--secondary{% else %}standard-link {% if link_inherit_color %} standard-link--inherit-color{% endif %}{% endif %}">
+                  {{ block.settings.url_text }}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+
+          {% if block.settings.layout == 'image_after' %}
+            <div class="promotional-image">
+              {% if block.settings.image_link != blank %}<a href="{{ block.settings.image_link }}">{% endif %}
+              {% if block.settings.image == blank %}
+                {% capture placeholder_type %}product-{{ forloop.index0 | modulo: 6 | plus: 1 }}{% endcapture %}
+                {{ placeholder_type | placeholder_svg_tag: 'placeholder-svg' }}
+              {% else %}
+                {% render 'responsive-image', image: block.settings.image %}
+              {% endif %}
+              {% if block.settings.image_link != blank %}</a>{% endif %}
+            </div>
+          {% endif %}
+
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Promotional images",
+    "tag": "section",
+    "max_blocks": 2,
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Image",
+        "settings": [
+          {
+            "type": "image_picker",
+            "id": "image",
+            "label": "Image"
+          },
+          {
+            "type": "select",
+            "id": "image_position",
+            "label": "Image alignment",
+            "info": "Used to keep the subject of your image in view",
+            "default": "center center",
+            "options": [
+              {
+                "value": "top left",
+                "label": "Top left"
+              },
+              {
+                "value": "top center",
+                "label": "Top center"
+              },
+              {
+                "value": "top right",
+                "label": "Top right"
+              },
+              {
+                "value": "center left",
+                "label": "Middle left"
+              },
+              {
+                "value": "center center",
+                "label": "Middle center"
+              },
+              {
+                "value": "center right",
+                "label": "Middle right"
+              },
+              {
+                "value": "bottom left",
+                "label": "Bottom left"
+              },
+              {
+                "value": "bottom center",
+                "label": "Bottom center"
+              },
+              {
+                "value": "bottom right",
+                "label": "Bottom right"
+              }
+            ]
+          },
+          {
+            "type": "url",
+            "id": "image_link",
+            "label": "Image link"
+          },
+          {
+            "type": "radio",
+            "id": "layout",
+            "label": "Layout",
+            "options": [
+              { "value": "image_before", "label": "Image above" },
+              { "value": "image_after", "label": "Image below" },
+              { "value": "text_over_image", "label": "Overlay"}
+            ],
+            "default": "image_before"
+          },
+          {
+            "type": "header",
+            "content": "Text area"
+          },
+          {
+            "type": "color",
+            "id": "color_background",
+            "label": "Background color",
+            "default": "#dae4e6"
+          },
+          {
+            "type": "color",
+            "id": "color_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "range",
+            "id": "overlay_opacity",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "Overlay opacity",
+            "default": 80,
+            "unit": "%"
+          },
+          {
+            "type": "richtext",
+            "id": "title",
+            "label": "Text",
+            "default": "<p>Combine images with text and a stand-out offer</p>"
+          },
+          {
+            "type": "text",
+            "id": "offer",
+            "label": "Heading",
+            "default": "Offer"
+          },
+          {
+            "type": "text",
+            "id": "url_text",
+            "label": "Button text",
+            "default": "Optional button"
+          },
+          {
+            "type": "url",
+            "id": "url",
+            "label": "Button link"
+          },
+          {
+            "type": "radio",
+            "id": "url_style",
+            "label": "Button style",
+            "options": [
+              { "value": "button_1", "label": "Button - primary" },
+              { "value": "button_2", "label": "Button - secondary" },
+              { "value": "link_style", "label": "Link"}
+            ],
+            "default": "button_1"
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_title",
+            "label": "Enlarge heading",
+            "default": false
+          },
+          {
+            "type": "checkbox",
+            "id": "enlarge_text",
+            "label": "Enlarge text",
+            "default": false
+          }
+        ]
+      }
+    ],
+    "presets": [
+      {
+        "name": "Promotional images",
+        "blocks": [
+          {
+            "type": "image",
+            "settings": {
+              "layout": "image_before"
+            }
+          },
+          {
+            "type": "image",
+            "settings": {
+              "layout": "image_after"
+            }
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

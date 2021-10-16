@@ -1,0 +1,81 @@
+<div class="page-width large-row standout-collection-flex {% if reverse_layout %}standout-collection-flex--reverse{% endif %} global-border-radius block-{{ block_id }}" {{ block_attributes }}>
+  <div class="one-half small-down--one-whole relative">
+
+    {% if alternative_image != blank or collection.featured_image != blank %}
+      <a href="{{ collection.url }}" class="desktop-background-image lazyload rimage-background"
+          data-bgset="{% if alternative_image != blank %}{% render 'bgset', image: alternative_image %}{% else %}{% render 'bgset', image: collection.featured_image %}{% endif %}"
+          data-sizes="auto"
+          data-parent-fit="cover">
+        <noscript>
+          {% assign image = alternative_image | default: collection.featured_image %}
+          <img src="{{ image | img_url: '1024x1024' }}" alt="{{ image.alt | escape }}" class="rimage-background__image">
+        </noscript>
+      </a>
+    {% endif %}
+
+    {% if alternative_image != blank %}
+      <a href="{{ collection.url }}" class="standout-collection__image">
+        {% render 'responsive-image' image: alternative_image %}
+      </a>
+    {% elsif collection.featured_image != blank %}
+      <a href="{{ collection.url }}" class="standout-collection__image">
+        {% render 'responsive-image' image: collection.featured_image %}
+      </a>
+    {% else %}
+      <div class="standout-collection__image--svg-placeholder">
+        {{ 'collection-1' | placeholder_svg_tag: 'placeholder-svg' }}
+      </div>
+    {% endif %}
+
+    {%- if collection != blank -%}
+      {%- assign collection_title = collection.title -%}
+      {%- assign collection_url = collection.url -%}
+    {%- else -%}
+      {%- capture collection_title -%}{{ 'homepage.onboarding.collection_title' | t }}{%- endcapture -%}
+      {%- assign collection_url = '#' -%}
+    {%- endif -%}
+
+    {% render 'image-overlay',
+                background_color: overlay_background_color,
+                background_opacity: background_opacity,
+                text_color: overlay_text_color,
+                title: collection_title,
+                enlarge_title: enlarge_title,
+                url: collection_url,
+                url_text: overlay_url_text,
+                url_style: overlay_url_style,
+                position: 'bottom-wide',
+                mobile_text_below: true %}
+  </div>
+
+  <div class="one-half small-down--one-whole relative slider-container slider-container--mobile-padding">
+    <div class="product-carousel-peek standout-collection-slider">
+      <div class="js-list-collection-slider will-slick">
+        {% for product in collection.products limit: 15 %}
+          <div class="slide relative js-contains-quickbuy">
+            {% assign quickbuy_toggle = settings.quickbuy_buttons_toggle %}
+            {% render 'product-block', grid_class: 'ignore', quickbuy: quickbuy_toggle, product: product, show_vendor: settings.grid_show_vendor %}
+          </div>
+        {% else %}
+          {% for i in (1..6) %}
+            <div class="product-block slide">
+              <div class="global-border-radius">
+                {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small' }}
+              </div>
+              <div class="product-block__title">
+                <div class="product-block__title-link">{{ 'homepage.onboarding.product_title' | t }}</div>
+              </div>
+              <div class="product-price"><span class="theme-money">{{ 1999 | money }}</span></div>
+            </div>
+          {% endfor %}
+        {% endfor %}
+      </div>
+      {% render 'peek-carousel-advice' %}
+      <div class="standout-collection-slider__controls">
+        <button class="btn--plain prev icon feather-icon" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}">{% render 'feather-arrow-left' %}</button>
+        <button class="btn--plain next icon feather-icon" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}">{% render 'feather-arrow-right' %}</button>
+      </div>
+    </div>
+  </div>
+</div>

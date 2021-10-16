@@ -1,0 +1,20 @@
+{% comment %}
+  Example usage:
+  {% render 'store-availability', product: product, current_variant: current_variant %}
+{% endcomment %}
+
+<div
+  class="store-availability-container-outer"
+  data-store-availability-container="{{ product.id }}"
+  data-section-url="{{ routes.root_url | append: '/' | replace: '//', '/' }}variants/VARIANT_ID/?section_id=store-availability"
+
+  {% if product.has_only_default_variant %}
+    data-has-only-default-variant="true"
+  {% endif %}
+
+  {% if product.variants.size == 1 %}
+    data-single-variant-id="{{ current_variant.id }}"
+    data-single-variant-product-title="{{ product.title | escape }}"
+    data-single-variant-product-available="{{ current_variant.available }}"
+  {% endif %}>
+</div>

@@ -1,0 +1,55 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+<link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+<link rel="preconnect" href="https://fonts.shopify.com" crossorigin>
+<link rel="preconnect" href="https://monorail-edge.shopifysvc.com">
+
+{%- liquid
+  assign base_font = settings.type_base_font
+  assign heading_font = settings.type_heading_font
+  assign nav_font = settings.type_nav_font
+  assign logo_font = settings.type_logo_font
+
+  assign base_font_bold = base_font | font_modify: 'weight', 'bolder'
+  assign base_font_italic = base_font | font_modify: 'style', 'italic'
+  assign base_font_bold_italic = base_font_bold | font_modify: 'style', 'italic'
+-%}
+
+{%- unless base_font.system? -%}
+  <link rel="preload" as="font" href="{{ base_font | font_url }}" type="font/woff2" crossorigin>
+
+  {%- if base_font_bold -%}<link rel="preload" as="font" href="{{ base_font_bold | font_url }}" type="font/woff2" crossorigin>{%- endif -%}
+  {%- if base_font_italic -%}<link rel="preload" as="font" href="{{ base_font_italic | font_url }}" type="font/woff2" crossorigin>{%- endif -%}
+  {%- if base_font_bold_italic -%}<link rel="preload" as="font" href="{{ base_font_bold_italic | font_url }}" type="font/woff2" crossorigin>{%- endif -%}
+{%- endunless -%}
+
+{%- unless nav_font.system? -%}
+  <link rel="preload" as="font" href="{{ nav_font | font_url }}" type="font/woff2" crossorigin>
+{%- endunless -%}
+
+{%- unless heading_font.system? -%}
+  <link rel="preload" as="font" href="{{ heading_font | font_url }}" type="font/woff2" crossorigin>
+{%- endunless -%}
+
+{%- unless logo_font.system? -%}
+  <link rel="preload" as="font" href="{{ logo_font | font_url }}" type="font/woff2" crossorigin>
+{%- endunless -%}
+
+<link rel="preload" href="{{ 'vendor.js' | asset_url }}" as="script">
+<link rel="preload" href="{{ 'theme.js' | asset_url }}" as="script">
+
+{%- if canonical_url != blank  -%}
+  <link rel="canonical" href="{{ canonical_url }}" />
+{%- endif -%}
+
+{%- if settings.favicon != blank and settings.favicon contains '.png' -%}
+  <link rel="shortcut icon" href="{{ settings.favicon | img_url: 'master' }}" type="image/png" />
+{%- elsif settings.favicon != blank and settings.favicon contains '.ico' -%}
+  <link rel="shortcut icon" href="{{ settings.favicon | img_url: 'master' }}" type="image/x-icon" />
+{%- endif -%}
+
+{%- if page_description -%}
+  <meta name="description" content="{{ page_description | escape }}">
+{%- endif -%}

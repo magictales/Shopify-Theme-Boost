@@ -1,0 +1,344 @@
+<div class="container standout-collection-section" data-section-id="{{ section.id }}" data-section-type="list-collections">
+  {% style %}
+    {% if section.settings.display_type == 'all' %}
+      {% capture brightness %}{{ section.settings.collection_background }}{% endcapture %}
+      {% assign brightness_number = brightness | color_brightness %}
+      {% if brightness_number < 135 %}{% assign text_color = '#ffffff' %}{% else %}{% assign text_color = '#000000' %}{% endif %}
+
+      .block-0 {
+        background-color: {{ section.settings.collection_background }};
+        color: {{ text_color }}
+      }
+    {% else %}
+      {% for block in section.blocks limit: section.blocks.size %}
+        {% capture brightness %}{{ block.settings.collection_background }}{% endcapture %}
+        {% assign brightness_number = brightness | color_brightness %}
+        {% if brightness_number < 135 %}{% assign text_color = '#ffffff' %}{% else %}{% assign text_color = '#000000' %}{% endif %}
+
+        .block-{{ block.id }} {
+          background-color: {{ block.settings.collection_background }};
+          color: {{ text_color }}
+        }
+      {% endfor %}
+    {% endif %}
+  {% endstyle %}
+
+  {% if section.settings.title != blank %}
+    <div class="page-width large-row">
+      <h1 class="large-title center">{{ section.settings.title }}</h1>
+    </div>
+  {% endif %}
+
+  {% if section.settings.layout == 'grid' %}
+
+    <div class="page-width collection-list-plain">
+      <div class="large-row">
+        <div class="grid-flex">
+          {%- assign grid_class = 'one-quarter' -%}
+          {%- if section.settings.grid == 2 -%}
+            {%- assign grid_class = 'one-half' -%}
+          {%- elsif section.settings.grid == 3 -%}
+            {%- assign grid_class = 'one-third' -%}
+          {%- elsif section.settings.grid == 5 -%}
+            {%- assign grid_class = 'one-fifth' -%}
+          {%- endif -%}
+
+          {%- assign grid_mobile_class = 'one-half' -%}
+          {%- if section.settings.grid_mobile == '1' -%}
+            {%- assign grid_mobile_class = 'one-whole' -%}
+          {%- endif -%}
+
+          {% capture grid_class_list %}{{ grid_class }} small-down--{{ grid_mobile_class }}{% endcapture %}
+
+          {%- assign pagination_count = section.settings.grid | times: section.settings.row_count -%}
+
+          {% if section.settings.display_type == 'all' %}
+            {% paginate collections by pagination_count %}
+              {% for collection in collections %}
+                {% render 'collection-block', collection: collection, grid_class: grid_class_list, image: collection.featured_image %}
+              {% endfor %}
+
+              {% if paginate.pages > 1 %}
+                <div class="grid-flex__item one-whole">
+                  {% render 'pagination' paginate: paginate %}
+                </div>
+              {% endif %}
+            {% endpaginate %}
+          {% else %}
+            {% for block in section.blocks %}
+              {%- assign collection = collections[block.settings.collection] -%}
+              {%- assign image = block.settings.alternative_image | default: collection.featured_image -%}
+              {% render 'collection-block', collection: collection, grid_class: grid_class_list, image: image %}
+            {% endfor %}
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  {% else %}
+
+    {% if section.settings.display_type == 'all' %}
+      {% paginate collections by 8 %}
+        {% for collection in collections %}
+          {%- assign reverse_this_layout = false -%}
+          {%- assign index_modulo = forloop.index | modulo: 2 -%}
+          {%- if section.settings.alternate_rows and index_modulo == 0 -%}
+            {%- assign reverse_this_layout = true -%}
+          {%- endif -%}
+
+          {% render 'collection-block-special',
+                    collection: collection,
+                    block_id: '0',
+                    block_attributes: '',
+                    alternative_image: false,
+                    reverse_layout: reverse_this_layout,
+                    overlay_background_color: section.settings.color_overlay_bg,
+                    background_opacity: section.settings.overlay_opacity,
+                    overlay_text_color: section.settings.color_overlay_text,
+                    overlay_url_text: section.settings.overlay_url_text,
+                    overlay_url_style: section.settings.overlay_url_style,
+                    enlarge_title: section.settings.enlarge_title  %}
+        {% endfor %}
+
+        {% if paginate.pages > 1 %}
+          {% render 'pagination', paginate: paginate %}
+        {% endif %}
+      {% endpaginate %}
+    {% else %}
+      {% for block in section.blocks %}
+        {%- assign collection = collections[block.settings.collection] -%}
+        {%- assign reverse_this_layout = false -%}
+        {%- assign index_modulo = forloop.index | modulo: 2 -%}
+        {%- if section.settings.alternate_rows and index_modulo == 0 -%}
+          {%- assign reverse_this_layout = true -%}
+        {%- endif -%}
+        {% assign color_overlay_bg = block.settings.color_overlay_bg | color_modify: 'alpha', overlay_opacity  %}
+        {% render 'collection-block-special',
+                   collection: collection,
+                   block_id: block.id,
+                   block_attributes: block.shopify_attributes,
+                   alternative_image: block.settings.alternative_image,
+                   reverse_layout: reverse_this_layout,
+                   overlay_background_color: block.settings.color_overlay_bg,
+                   background_opacity: block.settings.overlay_opacity,
+                   overlay_text_color: block.settings.color_overlay_text,
+                   overlay_url_text: block.settings.overlay_url_text,
+                   overlay_url_style: block.settings.overlay_url_style,
+                   enlarge_title: section.settings.enlarge_title %}
+      {% endfor %}
+    {% endif %}
+
+  {% endif %}
+</div>
+
+{% schema %}
+  {
+    "name": "Collection list",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Collection list"
+      },
+      {
+        "type": "radio",
+        "id": "display_type",
+        "label": "Collections to show",
+        "default": "all",
+        "info": "All collections are listed by default. To customize your list, choose 'Selected' and use the 'Add Collection' content setting to select which collections are shown.",
+        "options": [
+          {
+            "value": "all",
+            "label": "All"
+          },
+          {
+            "value": "selected",
+            "label": "Selected"
+          }
+        ]
+      },
+      {
+        "type": "radio",
+        "id": "layout",
+        "label": "Layout",
+        "default": "magazine",
+        "options": [
+          {
+            "value": "grid",
+            "label": "Grid"
+          },
+          {
+            "value": "magazine",
+            "label": "Magazine"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Grid layout"
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Collections per row desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "select",
+        "id": "grid_mobile",
+        "label": "Collections per row mobile",
+        "options": [
+          { "value": "1", "label": "1" },
+          { "value": "2", "label": "2" }
+        ],
+        "default": "2"
+      },
+      {
+        "type": "range",
+        "id": "row_count",
+        "label": "Rows per page (desktop)",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "default": 3
+      },
+      {
+        "type": "header",
+        "content": "Magazine layout"
+      },
+      {
+        "type": "checkbox",
+        "id": "alternate_rows",
+        "label": "Alternate layout every other row",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text",
+        "label": "Link text when showing all collections",
+        "default": "Shop now"
+      },
+      {
+        "type": "radio",
+        "id": "overlay_url_style",
+        "label": "Link style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "link_style"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge collection titles",
+        "default": false
+      },
+      {
+        "type": "paragraph",
+        "content": "Colors when showing all collections:"
+      },
+      {
+        "type": "color",
+        "id": "collection_background",
+        "label": "Collection background",
+        "default": "#fbdfdb"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Overlay background",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 10,
+        "unit": "%"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Overlay text",
+        "default": "#333333"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "image",
+        "name": "Collection",
+        "settings": [
+          {
+            "type": "collection",
+            "id": "collection",
+            "label": "Collection"
+          },
+          {
+            "type": "color",
+            "id": "collection_background",
+            "label": "Background color",
+            "default": "#fbdfdb"
+          },
+          {
+            "type": "image_picker",
+            "id": "alternative_image",
+            "label": "Image",
+            "info": "Replaces the collection image"
+          },
+          {
+            "type": "header",
+            "content": "Text overlay for magazine layout"
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_bg",
+            "label": "Background color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "range",
+            "id": "overlay_opacity",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "Background opacity",
+            "default": 10,
+            "unit": "%"
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_text",
+            "label": "Text color",
+            "default": "#333333"
+          },
+          {
+            "type": "text",
+            "id": "overlay_url_text",
+            "label": "Link text",
+            "default": "Shop now"
+          },
+          {
+            "type": "radio",
+            "id": "overlay_url_style",
+            "label": "Link style",
+            "options": [
+              { "value": "button_1", "label": "Button - primary" },
+              { "value": "button_2", "label": "Button - secondary" },
+              { "value": "link_style", "label": "Link"}
+            ],
+            "default": "link_style"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

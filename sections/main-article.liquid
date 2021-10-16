@@ -1,0 +1,329 @@
+{% assign single_column = false %}
+{% if article.image == blank or section.settings.split_layout == false %}
+  {% assign single_column = true %}
+{% endif %}
+
+<article class="article-page" data-section-id="{{ section.id }}"  data-section-type="article">
+  <div class="grid-no-gutter full-height {% if single_column == true %} single-column-layout container container--no-mobile-padding{% else %} split-column-layout{% endif %} {% if article.image != blank %}with-image{% endif %}">
+
+    {% if article.image != blank %}
+      <div class="grid__item-no-gutter one-half small-down--one-whole {% unless single_column %}sticky-element{% endunless %}">
+        <div class="relative">
+          <div class="rimage-background fade-in lazyload article-featured-image"
+            data-bgset="{% render 'bgset', image: article.image %}"
+            data-sizes="auto"
+            data-parent-fit="cover">
+            <noscript>
+              <img src="{{ article.image | img_url: '1024x1024' }}" alt="{{ article.image.alt | escape }}" class="rimage-background__image">
+            </noscript>
+          </div>
+          <div class="mobile-only article-featured-image">
+            <!-- ALSO FOR SINGLE COLUMN LAYOUT -->
+            {% render 'responsive-image', image: article.image %}
+          </div>
+        </div>
+    {% endif %}
+
+        <div class="mobile-only article-overlay mobile-overlay-under overlay overlay-standard overlay--center {% if article.image == blank %}article-overlay--no-image{% endif %}">
+          <h1 class="large-title">{{ article.title }}</h1>
+          {% if section.settings.article_show_author or section.settings.article_show_date %}
+            <div class="article__authordate">
+              {% if section.settings.article_show_author and article.user.image %}
+                <div class="article__avatar">
+                  <div class="rimage-background fade-in lazyload"
+                    data-bgset="{% render 'bgset', image: article.user.image %}"
+                    data-sizes="auto"
+                    data-parent-fit="cover">
+                    <noscript>
+                      <img src="{{ article.user.image | img_url: '1024x1024' }}" alt="{{ article.user.image.alt | escape }}" class="rimage-background__image">
+                    </noscript>
+                  </div>
+                </div>
+              {% endif %}
+
+              <div class="article__authordate__inner {% if article.user.image %} align-left{% endif %}">
+                {% if section.settings.article_show_author %}
+                  <div class="article__author">
+                    {{ article.author }}
+                  </div>
+                {% endif %}
+
+                {% if section.settings.article_show_date %}
+                  <div class="article__date">
+                    {{ article.published_at | time_tag: format: 'month_day_year' }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+        </div>
+
+    {% if article.image != blank %}
+      </div>
+    {% endif %}
+
+    <div class="grid__item-no-gutter one-half small-down--one-whole">
+      <div class="article-container relative very-large-row-under">
+        <div class="article">
+          <h1 class="article__title large-title article__title--split-layout">{{ article.title }}</h1>
+          <div class="rte rte--expanded-images clearfix">
+            {{ article.content }}
+          </div>
+
+          {% if section.settings.article_show_tags and article.tags.size > 0 %}
+            <div class="article__tags rte">
+              {% for tag in article.tags %}
+                <a href="{{ blog.url }}/tagged/{{ tag | handle }}" class="tag">{{ tag }}</a>
+              {% endfor %}
+            </div>
+          {% endif %}
+
+          <div class="flex">
+            <div class="article__meta">
+              {% if section.settings.article_show_author or section.settings.article_show_date %}
+                <div class="article__authordate">
+                  {% if section.settings.article_show_author and article.user.image %}
+                    <div class="article__avatar">
+                      <div class="rimage-background fade-in lazyload"
+                        data-bgset="{% render 'bgset', image: article.user.image %}"
+                        data-sizes="auto"
+                        data-parent-fit="cover">
+                        <noscript>
+                          <img src="{{ article.user.image | img_url: '1024x1024' }}" alt="{{ article.user.image.alt | escape }}" class="rimage-background__image">
+                        </noscript>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                  <div class="article__authordate__inner">
+                    {% if section.settings.article_show_author %}
+                      <div class="article__author">
+                        {{ article.author }}
+                      </div>
+                    {% endif %}
+
+                    {% if section.settings.article_show_date %}
+                      <div class="article__date">
+                        {{ article.published_at | time_tag: format: 'month_day_year' }}
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+            {% if section.settings.article_show_share_buttons %}
+              {% render 'social-sharing', share_title: article.title, share_permalink: article.url, share_image: article.image %}
+            {% endif %}
+          </div>
+        </div>
+
+        {% if section.settings.show_featured_products %}
+          <div class="js-content-products-slider">
+            {% render 'content-products', content: article.content %}
+          </div>
+        {% endif %}
+
+        {% if blog.previous_article or blog.next_article %}
+          <div class="article-pagination flex">
+            <div>
+              {% if blog.previous_article %}
+                <a href="{{ blog.previous_article }}" aria-label="{{ 'general.accessibility_labels.previous' | t | escape }}" class="prev">
+                  <span class="icon feather-icon">{% render 'feather-arrow-left' %}</span>
+                  {{ 'blogs.article.previous_post' | t }}
+                </a>
+              {% endif %}
+            </div>
+            <div>
+              {% if blog.next_article %}
+                <a href="{{ blog.next_article }}" aria-label="{{ 'general.accessibility_labels.next' | t | escape }}" class="next">
+                  {{ 'blogs.article.next_post' | t }}
+                  <span class="icon feather-icon">{% render 'feather-arrow-right' %}</span>
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        {% paginate article.comments by 12 %}
+          {% if article.comments_enabled? %}
+
+            {% if article.comments_count > 0 or comment %}
+              <h2 id="comments" class="article__comments-title standard-title">{{ 'blogs.comments.title' | t }}</h2>
+              <div class="article__comments">
+                {% if comment %}
+                  <p class="form-success">
+                    {% if blog.moderated? %}
+                      {{ 'blogs.comments.success_moderated' | t }}
+                    {% else %}
+                      {{ 'blogs.comments.success' | t }}
+                    {% endif %}
+                  </p>
+                {% endif %}
+                <ul>
+                  {% comment %}
+                    Display comment from URL parameters if it is waiting moderation
+                  {% endcomment %}
+
+                  {% if comment and comment.status != 'published' %}
+                    <li class="article__comment" id="{{ comment.id }}">
+                      <div class="rte">
+                        {{ comment.content }}
+                      </div>
+                      {% capture date %}{{ comment.created_at | time_tag: format: 'month_day_year' }}{% endcapture %}
+                      <p class="article__comment--author">{{ 'blogs.article.author' | t: author: comment.author }}</p>
+                    </li>
+                  {% endif %}
+
+                  {% for comment in article.comments %}
+                    <li class="article__comment" id="{{ comment.id }}">
+                      <div class="rte">
+                        {{ comment.content }}
+                      </div>
+                      {% capture date %}{{ comment.created_at | time_tag: format: 'month_day_year' }}{% endcapture %}
+                      <p class="article__comment--author">{{ 'blogs.article.comment_meta_html' | t: author: comment.author, date: date }}</p>
+                    </li>
+
+                  {% endfor %}
+                </ul>
+                {% render 'pagination', paginate: paginate %}
+              </div>
+            {% endif %}
+            <div class="article__comment-form large-row">
+              {% form 'new_comment', article %}
+                <h4 class="article__comments-title">{{ 'blogs.comments.form_title' | t }}</h4>
+
+                {% if form.errors %}
+                  <div class="error-message">{{ 'blogs.comments.correct_errors' | t }}</div>
+                {% endif %}
+                {{ form.errors | default_errors }}
+                <div class="article__comment-form-author form-row">
+                  <div class="input-wrapper">
+                    <label for="CommentAuthor">
+                      {{ 'blogs.comments.name' | t }}
+                    </label>
+                    <input type="text"
+                           name="comment[author]"
+                           id="CommentAuthor"
+                           class="{% if form.errors contains 'author' %}input-error{% endif %}"
+                           value="{{ form.author }}"
+                           autocapitalize="words">
+                  </div>
+                </div>
+                <div class="article__comment-form-body form-row">
+                  <div class="input-wrapper is-empty">
+                    <label for="CommentEmail">
+                      {{ 'blogs.comments.email' | t }}
+                    </label>
+                    <input type="email"
+                           name="comment[email]"
+                           id="CommentEmail"
+                           class="{% if form.errors contains 'email' %}input-error{% endif %}"
+                           value="{{ form.email }}"
+                           spellcheck="false"
+                           autocomplete="off"
+                           autocapitalize="off">
+                  </div>
+                </div>
+                <div class="article__comment-form-body form-row">
+                  <div class="input-wrapper">
+                    <label for="CommentBody">
+                      {{ 'blogs.comments.message' | t }}
+                    </label>
+                    <textarea
+                      name="comment[body]"
+                      id="CommentBody"
+                      class="{% if form.errors contains 'body' %}input-error{% endif %}"></textarea>
+                  </div>
+                </div>
+                {% if section.settings.required_fields == true %}
+                  <div class="tiny-text article__comment-form-required">{{ 'blogs.comments.required_fields' | t }}</div>
+                {% endif %}
+
+                {% if blog.moderated? %}
+                  <p>{{ 'blogs.comments.moderated' | t }}</p>
+                {% endif %}
+
+                <input type="submit" class="btn btn--primary" value="{{ 'blogs.comments.post' | t }}">
+              {% endform %}
+              {% if section.settings.privacy_link != blank %}
+                {% assign privacy_url = pages[section.settings.privacy_link].url %}
+                <span class="tiny-text">{{ 'blogs.comments.privacy_message_html' | t: privacy_url: privacy_url }}</span>
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endpaginate %}
+      </div>
+    </div>
+  </div>
+</article>
+
+{% render 'structured-data-article', article: article %}
+
+{% schema %}
+  {
+    "name": "Article",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "split_layout",
+        "label": "Enable split layout",
+        "default": false,
+        "info": "Image on the left, article on the right"
+      },
+      {
+        "type": "checkbox",
+        "id": "article_show_author",
+        "label": "Show author",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "article_show_date",
+        "label": "Show date",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "article_show_tags",
+        "label": "Show tags",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "article_show_share_buttons",
+        "label": "Show sharing icons",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Comments"
+      },
+      {
+        "type": "checkbox",
+        "id": "required_fields",
+        "label": "Show required fields note",
+        "default": true
+      },
+      {
+        "type": "page",
+        "id": "privacy_link",
+        "label": "Privacy policy page",
+        "info": "Shows underneath the comment form"
+      },
+      {
+        "type": "header",
+        "content": "Featured products"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_featured_products",
+        "label": "Show",
+        "default": true
+      },
+      {
+        "type": "paragraph",
+        "content": "Include links to products in your article to feature them underneath. [Learn more](https://cleancanvas.co.uk/support/boost-article-featured-products)"
+      }
+    ]
+  }
+{% endschema %}

@@ -1,0 +1,118 @@
+<div class="container container--no-mobile-padding large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="subscribe">
+  {% style %}
+    .section-{{ section.id }} .subscribe-section {
+      background-color: {{ section.settings.section_background_colour }};
+      color: {{ section.settings.section_text_colour }};
+    }
+
+    .section-{{ section.id }} .subscribe-form__inputs .input-wrapper label {
+      color: {{ section.settings.section_text_colour | color_modify: 'alpha', 0.7 }};
+    }
+
+    .section-{{ section.id }} .input-wrapper {
+      border-bottom-color: {{ section.settings.section_text_colour | color_modify: 'alpha', 0.3 }};
+    }
+  {% endstyle %}
+
+  <div class="subscribe-section large-section page-width global-border-radius">
+    <div class="reading-width subscribe-content">
+      <h2 class="subscribe-content__title {% if section.settings.enlarge_title %} giant-title{% else %} large-title{% endif %}">{{ section.settings.title }}</h2>
+      {% if section.settings.section_subtitle != blank %}
+        <div class="{% if section.settings.enlarge_text %}large-text{% endif %} rte">{{ section.settings.section_subtitle }}</div>
+      {% endif %}
+    </div>
+    <div class="reading-width subscribe-form">
+      {% form 'customer' %}
+        {% if form.posted_successfully? %}
+          <div class="subscribe-form__response subscribe-form__response--success">
+            <h4>{{ 'general.newsletter.success' | t }}</h4>
+          </div>
+        {% else %}
+          {% if form.errors %}
+            <div class="subscribe-form__response">
+              {% for field in form.errors %}
+              <p class="error-message">{{ field | capitalize }} - {{ form.errors.messages[field] }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+          <input type="hidden" id="contact_tags" name="contact[tags]" value="prospect,newsletter"/>
+          <div class="subscribe-form__inputs">
+            <div class="input-wrapper grid__item two-thirds small-down--one-whole">
+              <label class="subscribe-form__label" for="mailinglist_email">{{ 'layout.signup.email' | t }}</label>
+              <input type="email" required class="subscribe-form__email required grid__item one-third" value="" id="mailinglist_email" name="contact[email]" />
+            </div>
+            <div class="grid__item one-third small-down--one-whole">
+              <button class="btn {% if section.settings.button_style == 'button_1' %} btn--primary{% else %} btn--secondary{% endif %} subscribe-form__submit" type="submit">{{ 'layout.signup.submit' | t | escape }}</button>
+            </div>
+          </div>
+        {% endif %}
+      {% endform %}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Newsletter",
+    "tag": "section",
+    "class": "section-newsletter",
+    "settings": [
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "Newsletter"
+      },
+      {
+        "type": "richtext",
+        "id": "section_subtitle",
+        "label": "Text",
+        "default": "<p>Sign up now!<\/p>"
+      },
+      {
+        "type": "color",
+        "id": "section_background_colour",
+        "label": "Background color",
+        "default": "#ecf1f2"
+      },
+      {
+        "type": "color",
+        "id": "section_text_colour",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "radio",
+        "id": "button_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" }
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "paragraph",
+        "content": "Customers who subscribe will have their email address added to the “accepts marketing” [customer list](/admin/customers?query=&accepts_marketing=1)"
+      }
+    ],
+    "presets": [
+      {
+        "name": "Newsletter"
+      }
+    ]
+  }
+
+{% endschema %}

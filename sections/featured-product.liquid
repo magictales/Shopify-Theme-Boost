@@ -1,0 +1,248 @@
+<div class="relative container large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="featured-product">
+  {% style %}
+    .section-{{ section.id }} .featured-product-section {
+      background-color: {{ section.settings.section_background_colour }};
+      color: {{ section.settings.section_text_colour }};
+    }
+  {% endstyle %}
+
+  {%- assign product = all_products[section.settings.product] -%}
+
+  {% if product == blank %}
+    {%- assign section_onboarding = true -%}
+    {%- assign onboarding_title = 'homepage.onboarding.product_title' | t -%}
+  {% else %}
+    {%- assign current_variant = product.selected_or_first_available_variant -%}
+
+    {% if settings.swatch_enabled and settings.swatch_method == 'images' %}
+    {% style %}
+      {%- for option in product.options -%}
+        {%- if option == settings.swatch_option_name -%}
+          {%- capture value_key -%}option{{ forloop.index }}{%- endcapture -%}
+          {%- capture colours -%},{%- endcapture -%}
+          {%- for variant in product.variants -%}
+            {%- capture colour_compare -%},{{ variant[value_key] }},{%- endcapture -%}
+            {%- unless colours contains colour_compare -%}
+              {%- capture colours -%}{{ colours }}{{ variant[value_key] }},{%- endcapture -%}
+            {%- endunless -%}
+          {%- endfor -%}
+
+          {%- assign colours = colours | split: ',' -%}
+          {%- assign non_blank_colours = 0 -%}
+          {%- for colour in colours -%}
+            {%- unless colour == blank -%}
+              {%- if settings.variant_style == 'listed' -%}
+              select[data-colour-swatch="true"] + .clickyboxes .opt--{{ colour | handle }}::after {
+                background-image: url({{ colour | handle | append: '.png' | file_img_url: '40x40', crop: 'center' }});
+              }
+              {%- else -%}
+              .select2-container .swatch-option__nugget.bg-{{ colour | handle }} {
+                background-image: url({{ colour | handle | append: '.png' | file_img_url: '40x40', crop: 'center' }});
+              }
+              {%- endif -%}
+            {%- endunless -%}
+          {%- endfor -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {% endstyle %}
+    {% endif %}
+  {% endif %}
+
+  {% render 'structured-data-product', product: product, current_variant: current_variant %}
+  {% assign quickbuy_toggle = settings.quickbuy_buttons_toggle %}
+  <div class="page-width featured-product-section flex global-border-radius {% if section.settings.layout == 'image_after' %} featured-product-section--reverse {% endif %}{% if quickbuy_toggle == true %} js-contains-quickbuy{% endif %}">
+    <div class="one-half small-down--one-whole featured-product-image hover-images {% if product.media.size > 1 %}hover-images--two {% endif %} relative">
+      {% if product.media.size > 0 %}
+        {% if product.media.first.media_type == 'image' %}
+          <a href="{{ product.url }}" class="featured-product-image-link">
+            <div class="image-one">
+              {% render 'responsive-image', image: product.media.first.preview_image %}
+            </div>
+
+            {% if product.media.size > 1 and product.media[1].media_type == 'image' %}
+              <div class="image-two">
+                <div class="rimage-background fade-in lazyload"
+                      data-bgset="{% render 'bgset', image: product.media[1].preview_image %}"
+                      data-sizes="auto"
+                      data-parent-fit="cover">
+                  <noscript>
+                    <img src="{{ product.media[1] | img_url: '1024x1024' }}" alt="{{ product.media[1].preview_image.alt | escape }}" class="rimage-background__image">
+                  </noscript>
+                </div>
+              </div>
+            {% endif %}
+          </a>
+        {% else %}
+          {% render 'media' with product.media.first %}
+        {% endif %}
+      {% else %}
+        <div class="featured-product-image-link">
+          {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+        </div>
+      {% endif %}
+    </div>
+    <div class="one-half small-down--one-whole relative">
+
+      <div class="featured-product-content center">
+        <div class="featured-product__title-container">
+          <h2 class="featured-product__title {% if section.settings.enlarge_title %} giant-title{% else %} large-title{% endif %}">{{ product.title | default: onboarding_title | link_to: product.url }}</h2>
+          {% if section.settings.show_vendor %}
+            {% if product.vendor != blank %}
+              <span>{{ product.vendor }}</span>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="featured-product-compare-price product-price" data-price-wrapper>
+          {% if product != blank %}
+            {% if product.price_varies %}
+              <span class="featured-product__price-from small-title">{{ 'products.product.from_text' | t }}</span>
+            {% endif %}
+            <span class="{% if product.compare_at_price > product.price %} massive-title product-price__reduced{% endif %}" data-product-price>
+              <span class="{% if section.settings.enlarge_title %}biggest-title{% else %} massive-title{% endif %} theme-money">{{ product.price | money }}</span>
+            </span>
+
+            {% if product.compare_at_price > product.price %}
+              <span class="visually-hidden" data-compare-text>{{ 'products.product.regular_price' | t }}</span>
+              <span class="product-price__compare-large" data-compare-price>
+                {% if product.compare_at_price > product.price %}
+                  <span class="theme-money small-title">{{ product.compare_at_price | money }}</span>
+                {% endif %}
+              </span>
+            {% endif %}
+          {% else %}
+            <span class="{% if section.settings.enlarge_title %}biggest-title{% else %} massive-title{% endif %} theme-money">{{ 999 | money }}</span>
+          {% endif %}
+
+          {%- assign variant = product.variants | sort: 'price' | first -%}
+          {% render 'unit-price', variant: variant %}
+        </div>
+
+        <div class="featured-product__description {% if section.settings.enlarge_text %} large-text{% endif %}">
+          {% if section.settings.description != blank %}
+            {{ section.settings.description }}
+          {% endif %}
+        </div>
+
+        {% if product != blank %}
+          {% if quickbuy_toggle == true %}
+            <a class="featured-product-link-desktop-only {% if section.settings.url_style == 'button_1' %}btn btn--small btn--primary{% elsif section.settings.url_style == 'button_2' %}btn btn--small btn--secondary{% else %}standard-link{% endif %} js-quickbuy-button" href="{{ product.url }}">{{ 'products.quickbuy.quick_buy' | t }}
+            </a>
+            {% render 'quick-buy-placeholder', product: product %}
+
+            <a class="featured-product-link-mobile-only {% if section.settings.url_style == 'button_1' %}btn btn--small btn--primary{% elsif section.settings.url_style == 'button_2' %}btn btn--small btn--secondary{% else %}standard-link{% endif %}" href="{{ product.url }}">{{ 'products.product.shop_now' | t }}
+            </a>
+          {% else %}
+            <a class="{% if section.settings.url_style == 'button_1' %}btn btn--small btn--primary{% elsif section.settings.url_style == 'button_2' %}btn btn--small btn--secondary{% else %}standard-link{% endif %}" href="{{ product.url }}">{{ 'products.product.shop_now' | t }}
+            </a>
+          {% endif %}
+        {% else %}
+          <a class="{% if section.settings.url_style == 'button_1' %}btn btn--small btn--primary{% elsif section.settings.url_style == 'button_2' %}btn btn--small btn--secondary{% else %}standard-link{% endif %}">{{ 'products.product.shop_now' | t }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Featured product",
+    "tag": "section",
+    "class": "section-featured-product",
+    "settings": [
+      {
+        "type": "product",
+        "id": "product",
+        "label": "Product"
+      },
+      {
+        "type": "richtext",
+        "id": "description",
+        "label": "Description",
+        "default": "<p>Pair some text with a product to highlight features.</p>"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show vendor",
+        "default": false
+      },
+      {
+        "type": "radio",
+        "id": "url_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "color",
+        "id": "section_background_colour",
+        "label": "Background color",
+        "default": "#dae4e6"
+      },
+      {
+        "type": "color",
+        "id": "section_text_colour",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "header",
+        "content": "Media"
+      },
+      {
+        "type": "paragraph",
+        "content": "Learn more about [media types](https://help.shopify.com/en/manual/products/product-media)"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_video_looping",
+        "label": "Enable video looping",
+        "default": false
+      },
+      {
+        "type": "radio",
+        "id": "layout",
+        "label": "Media position",
+        "options": [
+          { "value": "image_before", "label": "Left" },
+          { "value": "image_after", "label": "Right" }
+        ],
+        "default": "image_before"
+      }
+    ],
+    "templates": [
+      "404",
+      "article",
+      "blog",
+      "cart",
+      "collection",
+      "index",
+      "list-collections",
+      "page",
+      "product",
+      "search"
+    ],
+    "presets": [
+      {
+        "name": "Featured product"
+      }
+    ]
+  }
+{% endschema %}

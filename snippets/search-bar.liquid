@@ -1,0 +1,46 @@
+{%- if section.settings.show_search_bar_desktop and force_hidden == blank -%}
+  {%- assign search_hidden = false -%}
+{%- else -%}
+  {%- assign search_hidden = true -%}
+{%- endif -%}
+{%- if mobile_search_hidden == true -%}
+  {%- assign search_hidden = true -%}
+{%- endif -%}
+<div class="utils__item search-bar desktop-only {% if search_hidden %}search-bar--fadein{% else %}search-bar--open{% endif %} {% if settings.enable_live_search %} live-search{% if settings.live_search_show_price %} live-search--show-price{% endif %}{% if settings.live_search_show_vendor %} live-search--show-vendor{% endif %}{% endif %} {{ settings_class }}">
+  <div class="search-bar__container">
+    <button class="btn btn--plain feather-icon icon--header search-form__icon {% unless section.settings.show_search_bar_desktop %}js-search-form-open{% else %}js-search-form-focus{% endunless %}" aria-label="{{ 'general.accessibility_labels.open_search' | t }}">
+      {% render 'feather-search' %}
+    </button>
+    <span class="icon-fallback-text">{{ 'general.search.submit' | t }}</span>
+
+    <form class="search-form" action="{{ routes.search_url }}" method="get" role="search" autocomplete="off">
+      <input type="hidden" name="type" value="{{ settings.search_type }}" />
+      <input type="hidden" name="options[prefix]" value="last" />
+      <label for="{{ search_id }}" class="label-hidden">
+        {{ 'general.search.placeholder' | t }}
+      </label>
+      <input type="search"
+             name="q"
+             id="{{ search_id }}"
+             value="{{ search.terms | escape | remove: '*' }}"
+             placeholder="{{ 'general.search.placeholder' | t }}"
+             class="search-form__input"
+             autocomplete="off"
+             autocorrect="off">
+      <button type="submit" class="btn btn--plain search-form__button" aria-label="{{ 'general.accessibility_labels.search' | t }}">
+      </button>
+    </form>
+
+    {% unless section.settings.show_search_bar_desktop %}
+      <button class="btn btn--plain feather-icon icon--header search-form__icon search-form__icon-close js-search-form-close" aria-label="{{ 'general.accessibility_labels.close' | t }}">
+        {% render 'feather-x' %}
+      </button>
+      <span class="icon-fallback-text">{{ 'general.search.close' | t }}</span>
+    {% endunless %}
+
+    <div class="search-bar__results">
+    </div>
+  </div>
+</div>
+
+

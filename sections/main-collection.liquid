@@ -1,0 +1,341 @@
+{%- paginate collection.products by section.settings.pagination_limit -%}
+  {%- liquid
+    if section.settings.enable_feature_header and current_page == 1 and collection.products.size > 0
+      assign show_feature_header = true
+    else
+      assign show_feature_header = false
+    endif
+
+    if show_feature_header
+      for block in section.blocks
+        if block.settings.collection == collection.handle and block.settings.product != blank
+          assign featured_product = all_products[block.settings.product]
+          assign overlay_opacity = block.settings.overlay_opacity
+          assign color_overlay_bg = block.settings.color_overlay_bg
+          assign overlay_text = block.settings.color_overlay_text
+        endif
+      endfor
+    endif
+
+    assign current_sort_by = collection.sort_by | default: collection.default_sort_by
+  -%}
+
+  <div class="container container--no-mobile-padding" data-section-id="{{ section.id }}" data-section-type="collection-template" data-components="faceted-filters,price-range">
+    {%- if show_feature_header -%}
+      {% style %}
+        {% for block in section.blocks %}
+          {% if block.settings.collection == collection.handle %}
+            .collection-header {
+              {% assign brightness_number = block.settings.collection_colour | color_brightness %}
+              {% if brightness_number < 135 %}{% assign text_color = '#ffffff' %}{% else %}{% assign text_color = '#000000' %}{% endif %}
+
+              background-color: {{ block.settings.collection_colour  }};
+              color: {{ text_color }};
+            }
+          {% endif %}
+        {% endfor %}
+      {% endstyle %}
+    {%- endif -%}
+
+    {%- assign header_image = collection.featured_image -%}
+    <div class="page-width collection-header global-border-radius {% if show_feature_header %}standout-collection-bg {% if header_image != blank or featured_product != blank %} collection-header--split{% endif %}{% endif %} {% if featured_product != blank %}collection-header--with-product{% endif %}">
+      {% if show_feature_header -%}
+
+        {%- if featured_product != blank -%}
+          <div class="collection-header__container {% if header_image != blank %} collection-header__image-container{% else %} collection-header__container--align-center{% endif %} relative">
+            {%- if header_image != blank -%}
+              <div class="rimage-background fade-in lazyload desktop-only"
+                data-bgset="{% render 'bgset', image: header_image %}"
+                data-sizes="auto"
+                data-parent-fit="cover">
+                <noscript>
+                  <img src="{{ header_image | img_url: '1024x1024' }}" alt="{{ header_image.alt | escape }}" class="rimage-background__image">
+                </noscript>
+              </div>
+
+              <div class="mobile-only">
+                {% render 'responsive-image', image: header_image, nomax: true %}
+              </div>
+            {%- endif -%}
+
+            {%- capture collection_description -%}
+              <div class="rte">
+                {{ collection.description }}
+              </div>
+            {%- endcapture -%}
+
+            {%- if header_image != blank -%}
+              {% render 'image-overlay',
+                background_color: color_overlay_bg,
+                background_opacity: overlay_opacity,
+                text_color: overlay_text,
+                title: collection.title,
+                text: collection_description,
+                position: 'low-wide',
+                mobile_text_below: true %}
+            {%- else -%}
+              <div class="collection-header__content-container center">
+                <h1 class="large-title">{{ collection.title }}</h1>
+                {% if collection.description != blank %}
+                  <div class="collection-header__description rte {% if header_image == blank and featured_product == blank %}reading-width{% endif %}">
+                    {{ collection.description }}
+                  </div>
+                {% endif %}
+              </div>
+            {%- endif -%}
+          </div>
+          <div class="collection-header__container collection-header__product-container">
+            {%- assign quickbuy_toggle = settings.quickbuy_buttons_toggle -%}
+            {% render 'product-block', product: featured_product, grid_class: ' ', quickbuy: quickbuy_toggle, show_vendor: section.settings.show_vendor %}
+          </div>
+        {%- else -%}
+          {%- if header_image != blank -%}
+            <div class="collection-header__container collection-header__image-container">
+              {% render 'responsive-image', image: header_image, nomax: true %}
+            </div>
+          {%- endif -%}
+
+          <div class="collection-header__container collection-header__content-container center">
+            <h1 class="large-title">{{ collection.title }}</h1>
+            {%- if collection.description != blank -%}
+              <div class="collection-header__description rte {% if header_image == blank and featured_product == blank %}reading-width{% endif %}">
+                {{ collection.description }}
+              </div>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
+
+      {%- else -%}
+
+        <div class="reading-width large-row center">
+          <h1 class="large-title row">{{ collection.title }}</h1>
+          <div class="rte {% if header_image == blank and featured_product == blank %}reading-width{% endif %}">
+            {{ collection.description }}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="page-width">
+      {%- if section.settings.show_filters or section.settings.show_sort_by -%}
+        {% render 'faceted-filters', paginate: paginate %}
+      {%- endif -%}
+
+      <div class="cc-product-list" data-ajax-products="{% if section.settings.ajax_products and current_page == 1 %}true{% else %}false{% endif %}">
+        {%- if section.settings.show_total and paginate.items > 0 -%}
+          <p class="cc-product-list__summary">
+            {{- 'collections.general.product_count' | t: count: paginate.items -}} 
+          </p>
+        {%- endif -%}
+
+        <div class="grid-flex large-row">
+          {%- liquid
+            assign grid_class = 'one-quarter'
+            if section.settings.grid == 2
+              assign grid_class = 'one-half'
+            elsif section.settings.grid == 3
+              assign grid_class = 'one-third'
+            elsif section.settings.grid == 5
+              assign grid_class = 'one-fifth'
+            endif
+
+            assign grid_mobile_class = 'one-half'
+            if section.settings.grid_mobile == '1'
+              assign grid_mobile_class = 'one-whole'
+            endif
+          -%}
+          {% capture grid_class_list %}{{ grid_class }} small-down--{{ grid_mobile_class }} grid-flex__item {% endcapture %}
+
+          {%- for product in collection.products -%}
+            {% assign quickbuy_toggle = settings.quickbuy_buttons_toggle %}
+            {% render 'product-block', quickbuy: quickbuy_toggle, product: product, grid_class: grid_class_list, show_vendor: section.settings.show_vendor %}
+          {%- else -%}
+            {%- if collection.handle == 'all' and collection.all_vendors.size == 0 and collection.all_types.size == 0 -%}
+              {%- for i in (1..8) -%}
+                <div class="{{ grid_class_list }}">
+                  <a href="#">
+                    {% capture current %}{% cycle 1, 2, 3, 4, 5, 6 %}{% endcapture %}
+                    {{ 'product-' | append: current | placeholder_svg_tag: 'placeholder-svg placeholder-svg--small' }}
+                  </a>
+                  <p><a href="#">{{ 'homepage.onboarding.product_title' | t }}</a></p>
+                  <p><span class="theme-money">{{ 1999 | money }}</span></p>
+                </div>
+              {%- endfor -%}
+            {%- else -%}
+              <div class="grid__item one-whole center">
+                <p>{{ 'collections.general.no_matches' | t }}</p>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+
+        {%- if paginate.pages > 1 -%}
+          {% render 'pagination', paginate: paginate %}
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+{%- endpaginate -%}
+
+
+{% schema %}
+  {
+    "name": "Collection",
+    "settings": [
+      {
+        "type": "header",
+        "content": "Feature header"
+      },
+      {
+        "type": "paragraph",
+        "content": "Use the 'Add Collection' content setting to assign featured products and a unique background colour per collection. You will need to navigate to the selected collection to see the changes. [Learn more](https://cleancanvas.co.uk/support/boost-settings-collection-blocks)"
+      },
+      {
+        "type": "checkbox",
+        "id": "enable_feature_header",
+        "label": "Enable Feature header",
+        "default": false
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Products per row desktop",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "select",
+        "id": "grid_mobile",
+        "label": "Products per row mobile",
+        "options": [
+          { "value": "1", "label": "1" },
+          { "value": "2", "label": "2" }
+        ],
+        "default": "2"
+      },
+      {
+        "type": "range",
+        "id": "pagination_limit",
+        "min": 8,
+        "max": 50,
+        "step": 1,
+        "label": "Products per page",
+        "default": 12
+      },
+      {
+        "type": "checkbox",
+        "id": "show_total",
+        "label": "Show product total",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "ajax_products",
+        "label": "Filter and sort collections without loading a new page",
+        "default": true,
+        "info": "Some apps require this to be disabled"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendor",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Filters"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_filters",
+        "label": "Enable filtering",
+        "info": "[Customize filters](\/admin\/menus)",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_filter_prod_counts",
+        "label": "Show product counts",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Sorting"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_sort_by",
+        "label": "Show 'sort by' option",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_featured",
+        "label": "Show 'Featured' sort option",
+        "default": false,
+        "info": "Add your manually sorted order to the sort options"
+      }
+    ],
+    "blocks": [
+      {
+        "type": "collection",
+        "name": "Collection",
+        "settings": [
+          {
+            "type": "paragraph",
+            "content": "Selecting a collection will show its collection image on the left, and the featured product on the right."
+          },
+          {
+            "type": "collection",
+            "id": "collection",
+            "label": "Collection"
+          },
+          {
+            "type": "product",
+            "id": "product",
+            "label": "Featured product"
+          },
+          {
+            "type": "color",
+            "id": "collection_colour",
+            "label": "Background color",
+            "default": "#43467F"
+          },
+          {
+            "type": "header",
+            "content": "Overlay",
+            "info": "Shown over the collection featured image when a featured product is selected."
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_bg",
+            "label": "Background color",
+            "default": "#ffffff"
+          },
+          {
+            "type": "range",
+            "id": "overlay_opacity",
+            "min": 0,
+            "max": 100,
+            "step": 1,
+            "label": "Background opacity",
+            "default": 10,
+            "unit": "%"
+          },
+          {
+            "type": "color",
+            "id": "color_overlay_text",
+            "label": "Text color",
+            "default": "#333333"
+          }
+        ]
+      }
+    ]
+  }
+{% endschema %}

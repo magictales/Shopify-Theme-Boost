@@ -1,0 +1,121 @@
+{%- if section.settings.show_product_recommendations -%}
+  <div class="container row">
+    <div class="product-recommendations page-width"
+        data-section-id="{{ section.id }}"
+        data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&limit={{ section.settings.grid }}&product_id={{ product.id }}">
+      {%- if recommendations.performed and recommendations.products_count > 0 -%}
+
+        <h4 class="text-center large-row large-title">{{ section.settings.title }}</h4>
+        <div class="related-products product-carousel-peek">
+          <div class="grid-flex product-recommendations-container js-related-product-carousel">
+            {%- assign grid_class = 'grid-flex' -%}
+            {%- if section.settings.grid == 2 -%}
+              {%- assign grid_class = 'one-half' -%}
+            {%- elsif section.settings.grid == 3 -%}
+              {%- assign grid_class = 'one-third' -%}
+            {%- elsif section.settings.grid == 5 -%}
+              {%- assign grid_class = 'one-fifth' -%}
+            {%- endif -%}
+            {% capture grid_class_list %}{{ grid_class }} grid-flex__item{% endcapture %}
+
+            {%- for product in recommendations.products -%}
+              {% render 'product-block', product: product, grid_class: 'grid-flex__item', show_vendor: settings.grid_show_vendor %}
+            {%- endfor -%}
+          </div>
+          {%- render 'peek-carousel-advice' -%}
+        </div>
+
+      {%- endif -%}
+    </div>
+  </div>
+{%- endif -%}
+
+{% javascript %}
+var loadProductRecommendationsIntoSection = function() {
+  // Look for an element with class 'product-recommendations'
+  var productRecommendationsSection = document.querySelector(".product-recommendations");
+  if (productRecommendationsSection === null) { return; }
+  // Build request URL
+  var requestUrl = productRecommendationsSection.dataset.url;
+  // Create request and submit it using Ajax
+  var request = new XMLHttpRequest();
+  request.open("GET", requestUrl);
+  request.onload = function() {
+    if (request.status >= 200 && request.status < 300) {
+      var container = document.createElement("div");
+      container.innerHTML = request.response;
+      productRecommendationsSection.innerHTML = container.querySelector(".product-recommendations").innerHTML;
+
+      theme.peekCarousel.init(
+        productRecommendationsSection,
+        $('.js-related-product-carousel', productRecommendationsSection),
+        '.productRecommendations',
+        function() {
+          return $(window).width() < 768
+        },
+        false
+      );
+      theme.initUniformHeightMonitor(productRecommendationsSection, '.product-block__image-container', '.product-block__image-container .image-one');
+    }
+  };
+  request.send();
+};
+// Reload the section in the editor when a setting changes
+document.addEventListener("shopify:section:load", function(event) {
+  if (document.querySelector('[data-section-id="' + event.detail.sectionId + '"].product-recommendations')) {
+    loadProductRecommendationsIntoSection();
+  }
+});
+document.addEventListener("shopify:section:unload", function(event) {
+  if (document.querySelector('[data-section-id="' + event.detail.sectionId + '"].product-recommendations')) {
+    theme.destroyUniformHeightMonitor($('.product-recommendations', event.target));
+    theme.peekCarousel.destroy(
+      $('.product-recommendations', event.target),
+      $('.js-related-product-carousel', event.target),
+      '.productRecommendations'
+    );
+  }
+});
+// Fetching the recommendations on page load
+document.addEventListener("DOMContentLoaded", function(event) {
+  loadProductRecommendationsIntoSection();
+});
+{% endjavascript %}
+
+{% schema %}
+  {
+    "name": "Product recommendations",
+    "tag": "section",
+    "class": "section-product-recommendations",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_product_recommendations",
+        "label": "Show recommendations",
+        "default": true,
+        "info": "Dynamic recommendations change and improve with time. [Learn more](https://help.shopify.com/en/themes/development/recommended-products)"
+      },
+      {
+        "type": "text",
+        "id": "title",
+        "label": "Heading",
+        "default": "You may also like"
+      },
+      {
+        "type": "range",
+        "id": "grid",
+        "label": "Products per row",
+        "min": 2,
+        "max": 5,
+        "step": 1,
+        "default": 4
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendors",
+        "default": false
+      }
+    ]
+  }
+{% endschema %}

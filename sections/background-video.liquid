@@ -1,0 +1,407 @@
+<div id="section-{{ section.id }}" class="background-video container container--no-mobile-padding large-row section-{{ section.id }}" data-section-id="{{ section.id }}" data-section-type="background-video">
+  {% style %}
+    .section-{{ section.id }} .rimage-outer-wrapper,
+    .section-{{ section.id }} .placeholder-container,
+    .section-{{ section.id }} .video-container {
+      height: {{ section.settings.height_mobile }}px;
+    }
+    @media (min-width: 840px) {
+      .section-{{ section.id }} .rimage-outer-wrapper,
+      .section-{{ section.id }} .placeholder-container,
+      .section-{{ section.id }} .video-container {
+        height: {{ section.settings.height_desktop }}px;
+      }
+    }
+
+    .section-{{ section.id }} .overlay {
+      top: {{ section.settings.overlay_position_y }}%;
+      left: {{ section.settings.overlay_position_x }}%;
+    }
+
+    {% for i in (1..2) %}
+      {% capture position_x %}label_position_x_{{ i }}{% endcapture %}
+      {% capture position_y %}label_position_y_{{ i }}{% endcapture %}
+
+      .section-{{ section.id }} .image-product-label-{{ i }} {
+        top: {{ section.settings[position_y] }}%;
+        left: {{ section.settings[position_x] }}%;
+      }
+    {% endfor %}
+  {% endstyle %}
+
+  <div class="page-width">
+    {% if section.settings.video != blank %}
+      <div class="full-width relative avoid-overlaps global-border-radius global-border-radius--not-extra-small">
+        <div class="video-container video-container--background avoid-overlaps__mobile-container global-border-radius global-border-radius--not-extra-small"
+          data-video-url="{{ section.settings.video | escape }}"
+          data-video-autoplay="true"
+          data-video-loop="true">
+          <div class="video-container__video"></div>
+          {% if section.settings.cover_image != blank %}
+            <div class="video-container__fallback rimage-outer-wrapper rimage-background lazyload fade-in global-border-radius global-border-radius--not-extra-small"
+              data-bgset="{% render 'bgset', image: section.settings.cover_image %}"
+              data-sizes="auto"
+              data-parent-fit="cover"
+              style="background-position: {{ section.settings.image_position }}">
+              <noscript>
+                <div class="rimage-wrapper" style="padding-top:{{ 1 | divided_by: section.settings.cover_image.aspect_ratio | times: 100 }}%">
+                  <img src="{{ section.settings.cover_image | img_url: '1024x1024' }}" alt="{{ section.settings.cover_image.alt | escape }}" class="rimage__image">
+                </div>
+              </noscript>
+            </div>
+          {% else %}
+          <div class="video-container__fallback rimage-outer-wrapper rimage-background lazyload fade-in global-border-radius global-border-radius--not-extra-small">
+            {{ 'image' | placeholder_svg_tag: 'placeholder-svg' }}
+          </div>
+          {% endif %}
+
+          {% for i in (1..2) %}
+            {% capture current_label %}product_id_{{ i }}{% endcapture %}
+            {% capture chevron_position %}chevron_position_{{ i }}{% endcapture %}
+
+            {% if section.settings[current_label] != blank %}
+              {% assign product_label = all_products[section.settings[current_label]] %}
+              {% capture current_number %}{{ i }}{% endcapture %}
+              {% assign quickbuy_toggle = settings.quickbuy_labels_toggle %}
+              {% render 'image-product-label',
+                          product_label: product_label,
+                          current_number: current_number,
+                          show_chevron: section.settings.show_chevron,
+                          chevron: section.settings[chevron_position],
+                          quickbuy: quickbuy_toggle,
+                          color_bg: section.settings.color_label_background,
+                          color_text: section.settings.color_label_text %}
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        {% render 'image-overlay',
+            background_color: section.settings.color_overlay_bg,
+            background_opacity: section.settings.overlay_opacity,
+            text_color: section.settings.color_overlay_text,
+            title: section.settings.overlay_title,
+            enlarge_title: section.settings.enlarge_title,
+            text: section.settings.overlay_text,
+            enlarge_text: section.settings.enlarge_text,
+            url: section.settings.overlay_url_1,
+            url_2: section.settings.overlay_url_2,
+            url_text: section.settings.overlay_url_text_1,
+            url_text_2: section.settings.overlay_url_text_2,
+            url_style: section.settings.overlay_url_style,
+            mobile_text_below: section.settings.mobile_text_below,
+            extra_large_text: true %}
+      </div>
+    {% else %}
+      <div class="container container--no-mobile-padding">{{ 'homepage.onboarding.no_content' | t }}</div>
+    {% endif %}
+  </div>
+</div>
+
+{% schema %}
+  {
+    "name": "Background video",
+    "tag": "section",
+    "class": "section-background-video",
+    "settings": [
+      {
+        "id": "video",
+        "type": "text",
+        "label": "Video link",
+        "info": "Supports mp4, YouTube and Vimeo and will autoplay when possible. Only mp4 videos will play on mobile. Background videos are silent. Please read documentation before using. [Read more](https://cleancanvas.co.uk/support/general/background-video)",
+        "default": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc"
+      },
+      {
+        "id": "cover_image",
+        "type": "image_picker",
+        "label": "Placeholder image",
+        "info": "Required. Shows while the video is loading, or if it cannot autoplay."
+      },
+      {
+        "type": "select",
+        "id": "image_position",
+        "label": "Image alignment",
+        "info": "Used to keep the subject of your focus in view",
+        "default": "center center",
+        "options": [
+          {
+            "value": "top left",
+            "label": "Top left"
+          },
+          {
+            "value": "top center",
+            "label": "Top center"
+          },
+          {
+            "value": "top right",
+            "label": "Top right"
+          },
+          {
+            "value": "center left",
+            "label": "Middle left"
+          },
+          {
+            "value": "center center",
+            "label": "Middle center"
+          },
+          {
+            "value": "center right",
+            "label": "Middle right"
+          },
+          {
+            "value": "bottom left",
+            "label": "Bottom left"
+          },
+          {
+            "value": "bottom center",
+            "label": "Bottom center"
+          },
+          {
+            "value": "bottom right",
+            "label": "Bottom right"
+          }
+        ]
+      },
+      {
+        "type": "header",
+        "content": "Layout"
+      },
+      {
+        "type": "range",
+        "id": "height_desktop",
+        "min": 200,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Desktop fixed height",
+        "default": 600
+      },
+      {
+        "type": "range",
+        "id": "height_mobile",
+        "min": 100,
+        "max": 1000,
+        "step": 20,
+        "unit": "px",
+        "label": "Mobile fixed height",
+        "default": 500
+      },
+      {
+        "type": "header",
+        "content": "Overlay"
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_bg",
+        "label": "Background color",
+        "default": "#ffffff"
+      },
+      {
+        "type": "range",
+        "id": "overlay_opacity",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "label": "Background opacity",
+        "default": 80,
+        "unit": "%",
+        "info": "Does not apply when the overlay is shown under the image on mobile."
+      },
+      {
+        "type": "color",
+        "id": "color_overlay_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "textarea",
+        "id": "overlay_title",
+        "label": "Heading",
+        "default": "Background video"
+      },
+      {
+        "type": "text",
+        "id": "overlay_text",
+        "label": "Text",
+        "default": "Add text and product links over a video"
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text_1",
+        "label": "Button 1 text"
+      },
+      {
+        "type": "url",
+        "id": "overlay_url_1",
+        "label": "Button 1 link"
+      },
+      {
+        "type": "text",
+        "id": "overlay_url_text_2",
+        "label": "Button 2 text"
+      },
+      {
+        "type": "url",
+        "id": "overlay_url_2",
+        "label": "Button 2 link"
+      },
+      {
+        "type": "radio",
+        "id": "overlay_url_style",
+        "label": "Button style",
+        "options": [
+          { "value": "button_1", "label": "Button - primary" },
+          { "value": "button_2", "label": "Button - secondary" },
+          { "value": "link_style", "label": "Link"}
+        ],
+        "default": "button_1"
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_title",
+        "label": "Enlarge heading",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "enlarge_text",
+        "label": "Enlarge text",
+        "default": false
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_x",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 50
+      },
+      {
+        "type": "range",
+        "id": "overlay_position_y",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 70
+      },
+      {
+        "type": "checkbox",
+        "id": "mobile_text_below",
+        "label": "Show overlay below image on mobile",
+        "info": "If not ticked product labels may not show on mobile"
+      },
+      {
+        "type": "header",
+        "content": "Product labels"
+      },
+      {
+        "type": "color",
+        "id": "color_label_background",
+        "label": "Background color",
+        "default": "#ffffff",
+        "info": "If transparent, a background will be applied on small screens to aid visibility"
+      },
+      {
+        "type": "color",
+        "id": "color_label_text",
+        "label": "Text color",
+        "default": "#333333"
+      },
+      {
+        "type": "checkbox",
+        "id": "show_chevron",
+        "label": "Show arrows",
+        "default": true
+      },
+      {
+        "type": "header",
+        "content": "Product label 1"
+      },
+      {
+        "type": "product",
+        "id": "product_id_1",
+        "label": "Product"
+      },
+      {
+        "type": "radio",
+        "id": "chevron_position_1",
+        "label": "Arrow position",
+        "options": [
+          { "value": "left", "label": "Left" },
+          { "value": "right", "label": "Right" }
+        ],
+        "default": "right"
+      },
+      {
+        "type": "range",
+        "id": "label_position_x_1",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 20
+      },
+      {
+        "type": "range",
+        "id": "label_position_y_1",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 30
+      },
+      {
+        "type": "header",
+        "content": "Product label 2"
+      },
+      {
+        "type": "product",
+        "id": "product_id_2",
+        "label": "Product"
+      },
+      {
+        "type": "radio",
+        "id": "chevron_position_2",
+        "label": "Arrow position",
+        "options": [
+          { "value": "left", "label": "Left" },
+          { "value": "right", "label": "Right" }
+        ],
+        "default": "right"
+      },
+      {
+        "type": "range",
+        "id": "label_position_x_2",
+        "label": "Horizontal position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 80
+      },
+      {
+        "type": "range",
+        "id": "label_position_y_2",
+        "label": "Vertical position",
+        "min": 0,
+        "max": 100,
+        "unit": "%",
+        "step": 1,
+        "default": 50
+      }
+    ],
+    "presets": [
+      {
+        "name": "Background video",
+        "settings": {
+          "video": "https:\/\/www.youtube.com\/watch?v=_9VUPq3SxOc"
+        }
+      }
+    ]
+  }
+{% endschema %}

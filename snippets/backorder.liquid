@@ -1,0 +1,25 @@
+{% capture backorder_message %}{{ 'products.product.backorder' | t }}{% endcapture %}
+{% unless backorder_message == blank %}
+  {% capture product_backorder_message %}
+    <p>
+      <span class="backorder__variant">
+        {{ product.title }}
+        {% unless variant.title contains 'Default' %}- {{ variant.title }}{% endunless %}
+      </span>
+      {{ 'products.product.backorder' | t }}
+    </p>
+  {% endcapture %}
+  {% if variant.inventory_management == 'shopify' and variant.inventory_quantity < 1 %}
+    <div class="backorder">
+      {% if template contains 'cart' %}
+        <p>{{ 'cart.general.backorder' | t }}</p>
+      {% else %}
+        {{ product_backorder_message }}
+      {% endif %}
+    </div>
+  {% else %}
+    <div class="backorder hidden">
+      {{ product_backorder_message }}
+    </div>
+  {% endif %}
+{% endunless %}

@@ -1,0 +1,24 @@
+{% assign address = format-address %}
+{% capture full_name_in %}{{ address.name }}<br>{% endcapture %}
+{% capture default_formatted_address %}{{ address | format_address }}{% endcapture %}
+
+{% assign default_formatted_address = default_formatted_address | remove_first: full_name_in %}
+{% assign default_formatted_address = default_formatted_address | remove_first: address.phone %}
+
+<div class="address">
+  {% if address.name != blank %}
+    <div class="address__name">
+     {{ address.name }}
+    </div>
+  {% endif %}
+
+  <div class="address__address">
+    {{ default_formatted_address }}
+  </div>
+
+  {% if address.phone != blank %}
+    <div class="address__phone">
+     <span class="address__phone-label">{{ 'customer.addresses.phone' | t }}:</span> {{ address.phone }}
+    </div>
+  {% endif %}
+</div>

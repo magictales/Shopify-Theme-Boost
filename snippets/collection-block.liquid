@@ -1,0 +1,10 @@
+<div class="product-block grid-flex__item {{ grid_class | default: 'one-quarter small-down--one-half' }}" {{ extra_attrs }}>
+  <div class="hover-images global-border-radius">
+    <a class="product-block__image image-one" href="{{ collection.url }}">
+      {% render 'responsive-image', image: image %}
+    </a>
+  </div>
+  <div class="product-block__title">
+    <a href="{{ collection.url }}">{{ collection.title }}</a>
+  </div>
+</div>

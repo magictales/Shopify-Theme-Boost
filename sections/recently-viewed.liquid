@@ -1,0 +1,56 @@
+{%- assign lowest_variant = product.variants | sort: 'price' | first -%}
+<div data-section-id="{{ section.id }}" data-section-type="recently-viewed">
+  {% if section.settings.show_recently_viewed %}
+    <div class="recently-viewed container row hidden"
+        data-handle="{{ product.handle }}"
+        data-url="{{ product.url }}"
+        data-title="{{ product.title | escape }}"
+        data-show-vendor="{{ section.settings.show_vendor }}"
+        data-vendor="{{ product.vendor }}"
+        data-image="{{ product.featured_media.preview_image | img_url: '600x600' }}"
+        {% if product.media.size > 1 %}data-image2="{{ product.media[1].preview_image | img_url: '600x600' }}"{% endif %}
+        data-price-varies="{{ product.price_varies }}"
+        data-price-compare="{{ product.compare_at_price }}"
+        data-price="{{ product.price }}"
+        {% if lowest_variant.unit_price_measurement %}
+          {%- capture unit_price_base_unit -%}
+            {%- if lowest_variant.unit_price_measurement.reference_value != 1 -%}
+              {{- lowest_variant.unit_price_measurement.reference_value -}}
+            {%- endif -%}
+            {{ lowest_variant.unit_price_measurement.reference_unit }}
+          {%- endcapture -%}
+          data-unit-price-price="{{ lowest_variant.unit_price }}"
+          data-unit-price-unit="{{ unit_price_base_unit | escape }}"
+        {% endif %}
+        data-available="{{ product.available }}"
+        data-show-hover-image="{{ settings.hover_image_enabled }}">
+      <div class="page-width">
+        <h4 class="text-center large-row large-title">{{ 'products.product.recent' | t }}</h4>
+        <div class="product-carousel-peek">
+          <div class="grid"></div>
+          {% render 'peek-carousel-advice' %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+  {
+    "name": "Recently viewed products",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "show_recently_viewed",
+        "label": "Show recently viewed products",
+        "default": true
+      },
+      {
+        "type": "checkbox",
+        "id": "show_vendor",
+        "label": "Show product vendors",
+        "default": false
+      }
+    ]
+  }
+{% endschema %}

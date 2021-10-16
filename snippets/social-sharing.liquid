@@ -1,0 +1,25 @@
+<div class="sharing social-links">
+  <span class="sharing-label">{{ 'general.social.share_heading' | t }}</span>
+  <ul class="sharing-list">
+    <li class="facebook">
+      <a class="sharing-link" target="_blank" rel="noopener" href="//www.facebook.com/sharer.php?u={{ shop.url | append: share_permalink }}">
+        <span aria-hidden="true">{% render 'svg-facebook' %}</span>
+        <span class="visually-hidden">{{ 'general.social.share_on_facebook' | t }}</span>
+      </a>
+    </li>
+    <li class="twitter">
+      <a class="sharing-link" target="_blank" rel="noopener" href="//twitter.com/share?text={{ share_title | url_param_escape }}&amp;url={{ shop.url | append: share_permalink }}">
+        <span aria-hidden="true">{% render 'svg-twitter' %}</span>
+        <span class="visually-hidden">{{ 'general.social.share_on_twitter' | t }}</span>
+      </a>
+    </li>
+    {% if share_image %}
+    <li class="pinterest">
+      <a class="sharing-link" target="_blank" rel="noopener" href="//pinterest.com/pin/create/button/?url={{ shop.url | append: share_permalink }}&amp;media={{ share_image | img_url: '1024x1024' }}&amp;description={{ share_title | url_param_escape }}">
+        <span aria-hidden="true">{% render 'svg-pinterest' %}</span>
+        <span class="visually-hidden">{{ 'general.social.share_on_pinterest' | t }}</span>
+      </a>
+    </li>
+    {% endif %}
+  </ul>
+</div>
